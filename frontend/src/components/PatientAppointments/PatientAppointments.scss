@@ -49,23 +49,22 @@
                 }
 
                 .status-dot {
+                    display: inline-block;
                     width: 10px;
                     height: 10px;
                     border-radius: 50%; // Makes the dot circular
+                    margin-right: 5px;
 
                     &.scheduled {
-                        background-color: #28a745;
-                        /* Green for done */
+                        background-color: #0590d4;
                     }
 
-                    &.canceled {
-                        background-color: #dc3545;
-                        /* Red for canceled */
+                    &.cancelled {
+                        background-color: red;
                     }
 
-                    &.continuing {
-                        background-color: #007bff;
-                        /* Blue for continuing */
+                    &.completed {
+                        background-color: greenyellow;
                     }
                 }
 
@@ -73,19 +72,18 @@
                     text-transform: lowercase;
                     font-size: 0.9rem;
                     color: #0590d4;
-                    font-weight: 600;
+                    font-weight: bold;
 
                     &.scheduled {
-                        color: #28a745;
+                        color: #0590d4;
                     }
 
-                    &.canceled {
-                        color: #dc3545;
+                    &.cancelled {
+                        color: red;
                     }
 
-                    &.continuing {
-                        background-color: #007bff;
-                        color: #fff;
+                    &.completed {
+                        background-color: greenyellow;
                     }
                 }
             }

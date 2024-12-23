@@ -28,7 +28,9 @@ const PatientAppointments = () => {
         prevAppointments.filter((appointment) => appointment.id !== id)
       );
       setExpandCancel(null);
-      alert("Randevu iptal edildi!");
+
+      // sayfayi yenile
+      window.location.reload();
     } catch (error) {
       console.error("Failed to cancel appointment:", error);
       alert("Randevu iptal edilemedi. Tekrar deneyin.");
@@ -91,11 +93,26 @@ const PatientAppointments = () => {
                     )}
                   </p>
                 </div>
+                {/* Status Section */}
                 <div className="status">
-                  <span className={`status-dot ${appointment.status.toLowerCase()}`}></span>
-                  <span className={`status ${appointment.status.toLowerCase()}`}>
-                    {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                  </span>
+                  {appointment.status.toLowerCase() === "scheduled" && (
+                    <>
+                      <span className="status-dot scheduled"></span>
+                      <span className="status scheduled">Aktif Randevu</span>
+                    </>
+                  )}
+                  {appointment.status.toLowerCase() === "cancelled" && (
+                    <>
+                      <span className="status-dot cancelled"></span>
+                      <span className="status cancelled">İptal Edildi</span>
+                    </>
+                  )}
+                  {appointment.status.toLowerCase() === "completed" && (
+                    <>
+                      <span className="status-dot completed"></span>
+                      <span className="status completed">Tamamlandı</span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -115,19 +132,21 @@ const PatientAppointments = () => {
               </div>
 
               {/* Trash Bin Icon */}
-              <div className="cancel-container">
-                <button
-                  className={`trash-button ${expandCancel === appointment.id ? "expanded" : ""}`}
-                  onClick={() => handleTrashClick(appointment.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                  {expandCancel === appointment.id && (
-                    <span className="cancel-text" onClick={() => cancelAppointment(appointment.id)}>
-                      İptal Et
-                    </span>
-                  )}
-                </button>
-              </div>
+              {appointment.status.toLowerCase() === 'scheduled' && (
+                <div className="cancel-container">
+                  <button
+                    className={`trash-button ${expandCancel === appointment.id ? "expanded" : ""}`}
+                    onClick={() => handleTrashClick(appointment.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                    {expandCancel === appointment.id && (
+                      <span className="cancel-text" onClick={() => cancelAppointment(appointment.id)}>
+                        İptal Et
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
