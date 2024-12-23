@@ -198,6 +198,7 @@ class StaffManagementSerializer(serializers.ModelSerializer):
         # Generate random password
         temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
         
+        # To avoid conflict remove username from validated_data if it exists
         validated_data.pop('username', None)
 
         # Create user
