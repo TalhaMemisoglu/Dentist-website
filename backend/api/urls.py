@@ -3,7 +3,7 @@ from .views import CreateUserView, ProfileView, LoginView, LogoutView, DentistLi
 from book.views import AppointmentViewSet
 from .views import PasswordResetRequestView, PasswordResetView
 from rest_framework.routers import DefaultRouter   
-#from .views import StaffManagementView, StaffDetailView
+from .views import StaffManagementView, StaffDetailView
 
 router = DefaultRouter()
 router.register(r'appointment', AppointmentViewSet, basename='appointment')
@@ -21,8 +21,8 @@ urlpatterns = [
     path('password-reset-request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password-reset/<str:uid>/<str:token>/', PasswordResetView.as_view(), name='password_reset'),
 
-    #path('admin/staff/', StaffManagementView.as_view(), name='staff-list'),
-    #path('admin/staff/<int:user_id>/', StaffDetailView.as_view(), name='staff-detail')
+    path('admin/staff/', StaffManagementView.as_view(), name='staff-list'),
+    path('admin/staff/<int:user_id>/', StaffDetailView.as_view(), name='staff-detail'),
 
     path('', include(router.urls)),
 ]

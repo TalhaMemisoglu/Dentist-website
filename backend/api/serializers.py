@@ -13,12 +13,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-'''
- Not well nourished about mail sending mechanisim adjust later if necessary
+
+import random
+import string
 
 from django.core.mail import send_mail
 from django.conf import settings
-'''
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -169,12 +170,12 @@ class PasswordUpdateSerializer(serializers.Serializer):
         return instance
 
 
-'''
+
 class StaffManagementSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'user_type']
-        read_only_fields = ['username']  # Username will be auto-generated?
+        read_only_fields = ['username']  # Username will be auto-generated
 
     def validate_user_type(self, value):
         valid_staff_types = ['dentist', 'assistant', 'manager']
@@ -195,14 +196,21 @@ class StaffManagementSerializer(serializers.ModelSerializer):
         validated_data['username'] = username
 
         # Generate random password
-        temp_password = CustomUser.objects.make_random_password()
+        temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
         
+        validated_data.pop('username', None)
+
         # Create user
         user = CustomUser.objects.create_user(
             username=username,
             password=temp_password,
             **validated_data
         )
+
+        # Set remaining fields
+        for attr, value in validated_data.items():
+            setattr(user, attr, value)
+        user.save()
 
         # Send email with credentials
         try:
@@ -223,4 +231,3 @@ class StaffManagementSerializer(serializers.ModelSerializer):
             print(f"Failed to send email: {e}")
 
         return user
-'''

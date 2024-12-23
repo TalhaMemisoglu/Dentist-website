@@ -19,11 +19,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-'''
- Adjust later if necessary
+
 from rest_framework.permissions import IsAdminUser
 from .serializers import StaffManagementSerializer
-'''
+
 
 
 # Email Verification View
@@ -297,7 +296,7 @@ class UpdatePasswordView(APIView):
 
 
 
-'''
+
 
 class StaffManagementView(APIView):
     permission_classes = [IsAdminUser]
@@ -365,4 +364,3 @@ class StaffDetailView(APIView):
             )
         staff.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-'''
