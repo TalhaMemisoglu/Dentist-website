@@ -160,8 +160,7 @@ class DentistViewSet(viewsets.ReadOnlyModelViewSet):
                 "start": start_time_str,
                 "end": end_time_str
             },
-            "available_slots": available_slots,
-            "treatment": treatment
+            "available_slots": available_slots
         })
     
 
@@ -200,6 +199,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             
             self.perform_create(serializer)
             
+            created_appointment = serializer.instance
             updated_appointments = self.get_queryset().order_by('-appointment_date', '-appointment_time')
             appointments_serializer = self.get_serializer(updated_appointments, many=True)
             
@@ -207,7 +207,16 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 'message': 'Randevu başarıyla oluşturuldu',
                 'user_id': request.user.id,
                 'user_type': request.user.user_type,
-                'appointments': appointments_serializer.data
+                'appointments': appointments_serializer.data,
+                'treatment': created_appointment.treatment,
+                'created_appointment': { # Not sure necessary 
+                'id': created_appointment.id,
+                'treatment': created_appointment.treatment,
+                'appointment_date': created_appointment.appointment_date,
+                'appointment_time': created_appointment.appointment_time,
+                'dentist_name': created_appointment.dentist.get_full_name(),
+                'status': created_appointment.status
+                }
             }, status=status.HTTP_201_CREATED)
             
         except serializer.ValidationError as e:
