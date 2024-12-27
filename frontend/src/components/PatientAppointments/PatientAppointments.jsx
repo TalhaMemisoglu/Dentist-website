@@ -120,7 +120,7 @@ const PatientAppointments = () => {
               <div className="appointment-body">
                 <div className="appointment-info">
                   <p className="appointment-treatment">
-                    Tedavi: <strong>{appointment.treatment_name || "Kanal Tedavi"}</strong>
+                    Tedavi: <strong>{appointment.treatment || "Kanal Tedavi"}</strong>
                   </p>
                   <p className="appointment-duration">
                     Süre: <strong>{appointment.duration || "N/A"} dakika</strong>
