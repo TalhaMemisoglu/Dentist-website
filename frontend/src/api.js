@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
 
-const apiURL = "/choreo-apis/backend-2052237686:8000"
+const apiURL = "/choreo-apis/dentistwebsite/backend/v1"
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : apiURL
