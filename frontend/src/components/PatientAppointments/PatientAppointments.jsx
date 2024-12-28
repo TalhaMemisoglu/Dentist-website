@@ -5,10 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const PatientAppointments = () => {
-  const [appointments, setAppointments] = useState([]);
+  const [activeAppointments, setActiveAppointments] = useState([]);
+  const [pastAppointments, setPastAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandCancel, setExpandCancel] = useState(null);
+  const [alert, setAlert] = useState(null);
 
   // Function to handle trash bin click and start shrinking process
   const handleTrashClick = (id) => {
@@ -24,16 +26,20 @@ const PatientAppointments = () => {
   const cancelAppointment = async (id) => {
     try {
       await api.delete(`/api/booking/appointments/${id}/cancel/`);
-      setAppointments((prevAppointments) =>
-        prevAppointments.filter((appointment) => appointment.id !== id)
+      setActiveAppointments((prevActiveAppointments) =>
+        prevActiveAppointments.filter((appointment) => appointment.id !== id)
+      );
+      setPastAppointments((prevPastAppointments) =>
+        prevPastAppointments.filter((appointment) => appointment.id !== id)
       );
       setExpandCancel(null);
 
-      // sayfayi yenile
+      setAlert("Randevu iptal edildi!");
+
       window.location.reload();
     } catch (error) {
       console.error("Failed to cancel appointment:", error);
-      alert("Randevu iptal edilemedi. Tekrar deneyin.");
+      setAlert({ message: "Randevu iptal edilemedi. Lütfen tekrar deneyin.", type: "error"});
     }
   };
 
@@ -43,13 +49,33 @@ const PatientAppointments = () => {
         setIsLoading(true);
         setError("");
         const response = await api.get("/api/booking/appointments");
-        console.log("Fetched appointments:", response.data);
+        
+        const appointments = Array.isArray(response.data.appointments) 
+          ? response.data.appointments 
+          : [];
 
-        setAppointments(
-          Array.isArray(response.data.appointments)
-            ? response.data.appointments
-            : []
-        );
+        const now = new Date();
+        
+        // Split and sort appointments
+        const active = [];
+        const past = [];
+        
+        appointments.forEach(apt => {
+          const appointmentDateTime = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
+          if (appointmentDateTime >= now && apt.status.toLowerCase() === 'scheduled') {
+            active.push(apt);
+          } else {
+            past.push(apt);
+          }
+        });
+
+        // Sort both arrays by date
+        const sortByDate = (a, b) => 
+          new Date(`${a.appointment_date}T${a.appointment_time}`) - 
+          new Date(`${b.appointment_date}T${b.appointment_time}`);
+
+        setActiveAppointments(active.sort(sortByDate));
+        setPastAppointments(past.sort(sortByDate));
       } catch (err) {
         console.error("Error fetching appointments:", err);
         setError("Failed to load appointments. Please try again.");
@@ -69,86 +95,183 @@ const PatientAppointments = () => {
           <p>Tüm Randevular yükleniyor...</p>
         ) : error ? (
           <p className="error-message">{error}</p>
-        ) : appointments.length === 0 ? (
+        ) : activeAppointments.length === 0 && pastAppointments.length === 0 ? (
           <p className="no-appointments">Randevu bulunamadı.</p>
         ) : (
-          appointments.map((appointment, index) => (
-            <div key={index} className="appointment-card">
-              {/* Header Section */}
-              <div className="appointment-header">
-                <div className="date-time">
-                  <p className="appointment-date">
-                    {new Date(appointment.appointment_date).toLocaleDateString("tr", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "short",
-                    })},{" "}
-                    {new Date(`1970-01-01T${appointment.appointment_time}`).toLocaleTimeString(
-                      "tr",
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      }
-                    )}
-                  </p>
-                </div>
-                {/* Status Section */}
-                <div className="status">
-                  {appointment.status.toLowerCase() === "scheduled" && (
-                    <>
-                      <span className="status-dot scheduled"></span>
-                      <span className="status scheduled">Aktif Randevu</span>
-                    </>
-                  )}
-                  {appointment.status.toLowerCase() === "cancelled" && (
-                    <>
-                      <span className="status-dot cancelled"></span>
-                      <span className="status cancelled">İptal Edildi</span>
-                    </>
-                  )}
-                  {appointment.status.toLowerCase() === "completed" && (
-                    <>
-                      <span className="status-dot completed"></span>
-                      <span className="status completed">Tamamlandı</span>
-                    </>
-                  )}
-                </div>
-              </div>
+          <>
+            {/* Active Appointments Section */}
+            {activeAppointments.length > 0 && (
+              <>
+                <h5 className="section-title">Aktif Randevular</h5>
+                {activeAppointments.map((appointment, index) => (
+                  <div key={`active-${index}`} className="appointment-card">
+                    {/* Header Section */}
+                    <div className="appointment-header">
+                      <div className="date-time">
+                        <p className="appointment-date">
+                          {new Date(appointment.appointment_date).toLocaleDateString("tr", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "short",
+                          })},{" "}
+                          {new Date(`1970-01-01T${appointment.appointment_time}`).toLocaleTimeString(
+                            "tr",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            }
+                          )}
+                        </p>
+                      </div>
+                      {/* Status Section */}
+                      <div className="status">
+                        {appointment.status.toLowerCase() === "scheduled" && (
+                          <>
+                            <span className="status-dot scheduled"></span>
+                            <span className="status scheduled">Aktif Randevu</span>
+                          </>
+                        )}
+                        {appointment.status.toLowerCase() === "cancelled" && (
+                          <>
+                            <span className="status-dot cancelled"></span>
+                            <span className="status cancelled">İptal Edildi</span>
+                          </>
+                        )}
+                        {appointment.status.toLowerCase() === "completed" && (
+                          <>
+                            <span className="status-dot completed"></span>
+                            <span className="status completed">Tamamlandı</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
 
-              {/* Body Section */}
-              <div className="appointment-body">
-                <div className="appointment-info">
-                  <p className="appointment-treatment">
-                    Tedavi: <strong>{appointment.treatment || "Kanal Tedavi"}</strong>
-                  </p>
-                  <p className="appointment-duration">
-                    Süre: <strong>{appointment.duration || "N/A"} dakika</strong>
-                  </p>
-                </div>
-                <p className="appointment-doctor">
-                  Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong>
-                </p>
-              </div>
+                    {/* Body Section */}
+                    <div className="appointment-body">
+                      <div className="appointment-info">
+                        <p className="appointment-treatment">
+                          Tedavi: <strong>{appointment.treatment_name || "Kanal Tedavi"}</strong>
+                        </p>
+                        <p className="appointment-duration">
+                          Süre: <strong>{appointment.duration || "N/A"} dakika</strong>
+                        </p>
+                      </div>
+                      <p className="appointment-doctor">
+                        Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong>
+                      </p>
+                    </div>
 
-              {/* Trash Bin Icon */}
-              {appointment.status.toLowerCase() === 'scheduled' && (
-                <div className="cancel-container">
-                  <button
-                    className={`trash-button ${expandCancel === appointment.id ? "expanded" : ""}`}
-                    onClick={() => handleTrashClick(appointment.id)}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                    {expandCancel === appointment.id && (
-                      <span className="cancel-text" onClick={() => cancelAppointment(appointment.id)}>
-                        İptal Et
-                      </span>
+                    {/* Trash Bin Icon */}
+                    {appointment.status.toLowerCase() === 'scheduled' && (
+                      <div className="cancel-container">
+                        <button
+                          className={`trash-button ${expandCancel === appointment.id ? "expanded" : ""}`}
+                          onClick={() => handleTrashClick(appointment.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                          {expandCancel === appointment.id && (
+                            <span className="cancel-text" onClick={() => cancelAppointment(appointment.id)}>
+                              İptal Et
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     )}
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Separator - only show if both sections have appointments */}
+            {activeAppointments.length > 0 && pastAppointments.length > 0 && (
+              <div className="appointments-separator"></div>
+            )}
+
+            {/* Past Appointments Section */}
+            {pastAppointments.length > 0 && (
+              <>
+                <h5 className="section-title">Geçmiş Randevular</h5>
+                {pastAppointments.map((appointment, index) => (
+                  <div key={`past-${index}`} className="appointment-card">
+                    {/* Header Section */}
+                    <div className="appointment-header">
+                      <div className="date-time">
+                        <p className="appointment-date">
+                          {new Date(appointment.appointment_date).toLocaleDateString("tr", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "short",
+                          })},{" "}
+                          {new Date(`1970-01-01T${appointment.appointment_time}`).toLocaleTimeString(
+                            "tr",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            }
+                          )}
+                        </p>
+                      </div>
+                      {/* Status Section */}
+                      <div className="status">
+                        {appointment.status.toLowerCase() === "scheduled" && (
+                          <>
+                            <span className="status-dot scheduled"></span>
+                            <span className="status scheduled">Aktif Randevu</span>
+                          </>
+                        )}
+                        {appointment.status.toLowerCase() === "cancelled" && (
+                          <>
+                            <span className="status-dot cancelled"></span>
+                            <span className="status cancelled">İptal Edildi</span>
+                          </>
+                        )}
+                        {appointment.status.toLowerCase() === "completed" && (
+                          <>
+                            <span className="status-dot completed"></span>
+                            <span className="status completed">Tamamlandı</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Body Section */}
+                    <div className="appointment-body">
+                      <div className="appointment-info">
+                        <p className="appointment-treatment">
+                          Tedavi: <strong>{appointment.treatment_name || "Kanal Tedavi"}</strong>
+                        </p>
+                        <p className="appointment-duration">
+                          Süre: <strong>{appointment.duration || "N/A"} dakika</strong>
+                        </p>
+                      </div>
+                      <p className="appointment-doctor">
+                        Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong>
+                      </p>
+                    </div>
+
+                    {/* Trash Bin Icon */}
+                    {appointment.status.toLowerCase() === 'scheduled' && (
+                      <div className="cancel-container">
+                        <button
+                          className={`trash-button ${expandCancel === appointment.id ? "expanded" : ""}`}
+                          onClick={() => handleTrashClick(appointment.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                          {expandCancel === appointment.id && (
+                            <span className="cancel-text" onClick={() => cancelAppointment(appointment.id)}>
+                              İptal Et
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
+          </>
         )}
       </div>
     </div>
