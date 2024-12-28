@@ -7,7 +7,7 @@ export default defineConfig({   //Will send the request to the backend server
   server: {
     proxy: {
       '/api': { // This matches any request starting with `/api`
-        target: 'http://127.0.0.1:8000', // Your backend URL
+        target: 'https://dentist-website-production.up.railway.app', // Your backend URL
         changeOrigin: true,
         secure: false,
       },
