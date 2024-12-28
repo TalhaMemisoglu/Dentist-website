@@ -1,7 +1,8 @@
 import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
 
-const apiUrl = "https://fd89105f-5f3e-40e6-8a60-232ba24009f5-dev.e1-eu-north-azure.choreoapis.dev/dentistwebsite/backend/v1";
+// sample JavaScript code snippet
+const apiUrl = "http://dentist-website-production.up.railway.app/";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : apiUrl,
