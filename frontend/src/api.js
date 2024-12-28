@@ -2,7 +2,7 @@ import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
 
 // sample JavaScript code snippet
-const apiUrl = "dentist-website-production.up.railway.app";
+const apiUrl = "http://dentist-website-production.up.railway.app/";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : apiUrl,
