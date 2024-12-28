@@ -11,7 +11,7 @@ const Contactus = () => {
                 <Navbar />
                 <SectionTitle 
                     title="Bizimle iletişime geçin"
-                    description="Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups."
+                    description="Bizimle iletişime geçin: Sorularınız, randevu talepleriniz veya önerileriniz için size yardımcı olmaktan mutluluk duyarız. Bize ulaşmak için aşağıdaki iletişim kanallarını kullanabilirsiniz."
                 />
                 <div className="contact-info-container">
                     <div className="map-container">
@@ -29,8 +29,10 @@ const Contactus = () => {
 
                     <div className="contact-details">
                         <h3>İletişim Bilgileri</h3>
-                        <p><strong>WhatsApp:</strong> <a href="https://wa.me/901234567890" target="_blank" rel="noopener noreferrer">+90 123 456 78 90</a></p>
-                        <p><strong>Email:</strong> <a href="mailto:info@ornekmail.com">info@ornekmail.com</a></p>
+                        <p><strong>WhatsApp:</strong> <a href="https://wa.me/+905363630690
+" target="_blank" rel="noopener noreferrer">	0536 363 06 90
+</a></p>
+                        <p><strong>Email:</strong> <a href="mailto:info@ornekmail.com">readmedentist@gmail.com</a></p>
                         <p><strong>Çalışma Saatleri:</strong> Pazartesi - Cuma, 09:00 - 18:00</p>
                         <div className="social-media">
                             

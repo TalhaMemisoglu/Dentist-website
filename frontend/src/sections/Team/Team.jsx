@@ -40,7 +40,7 @@ const Team = () => {
                     </div>
 
                     <div className="col-lg-5">
-                        <p className='pt-5'>Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.</p>
+                        <p className='pt-5'>Hekimlerimizle tanışın: Alanında uzman, güler yüzlü ve deneyimli hekimlerimiz, sizlere en iyi sağlık hizmetini sunmak için burada.</p>
                     </div>
                 </div>
 

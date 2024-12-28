@@ -21,7 +21,7 @@ const Services = () => {
                     </div>
                     <div className="col-lg-6 col-sm-6">
                         <p className='service-title-text'>
-                            Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.
+                        Sağlığınızı ve gülüşünüzü ön planda tutarak, modern teknikler ve uzman kadromuzla ihtiyaçlarınıza uygun geniş bir yelpazede hizmet sunuyoruz. Her adımda size özel çözümlerle yanınızdayız.
                         </p>
                     </div>
                 </div>

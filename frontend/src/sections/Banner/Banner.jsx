@@ -45,7 +45,7 @@ const Banner = () => {
                                             </div>
                                             <div className='call-text'>
                                                 <p>24 SAAT DESTEK</p>
-                                                <h6>0532 345 76 56</h6>
+                                                <h6>0539 466 51 29</h6>
                                             </div>
                                         </div>
                                     </div>

@@ -19,7 +19,7 @@ import RequestPasswordReset from './pages/PasswordReset/RequestPasswordReset'
 import ResetPassword from './pages/PasswordReset/ResetPassword'
 import ProfilePage from './pages/ProfilePage/ProfilePage'
 import PatientAppointmentsPage from './pages/PatientAppointmentsPage/PatientAppointmentsPage'
-
+import AddRemove from './pages/AddRemove/AddRemove'
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -49,6 +49,7 @@ function App() {
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/verify-email/:userId" element={<VerifyEmail />} />
           <Route path="/request-password-reset" element={<RequestPasswordReset />} />
+          <Route path="/addremove" element={<AddRemove />} />
           <Route path="/password-reset/:uid/:token" element={<ResetPassword />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

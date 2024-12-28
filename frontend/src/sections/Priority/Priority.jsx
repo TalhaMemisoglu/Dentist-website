@@ -19,7 +19,7 @@ const Priority = () => {
                             <SectionTitle 
                                 subTitle="ÖNCELİĞİMİZ" 
                                 title="Müşterilerimiz önceliğimizdir."
-                                description="Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups."
+                                description="Hasta memnuniyeti, sağlığınız ve konforunuz her zaman önceliğimizdir. Sizlere en iyi hizmeti sunmak için özenle çalışıyoruz."
                             />
 
                             <div className="theme-btn">

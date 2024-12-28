@@ -14,7 +14,7 @@ const Expert = () => {
                             <SectionTitle 
                                 subTitle="DİŞTE UZMANLIK"
                                 title="En iyi diş hekimlerinden birinci sınıf diş hekimliği."
-                                description="Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts"
+                                description=""
                             />
 
                             <ul>

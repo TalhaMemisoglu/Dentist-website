@@ -11,42 +11,42 @@ const ServicesData = [
     {
         'icon': iconOne,
         'title': 'Diş Protezi',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Eksik dişlerinizi tamamlayarak estetik ve fonksiyonel bir gülüş sunuyoruz.',
     },
     {
         'icon': iconTwo,
         'title': 'İmplant',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Güçlü ve doğal diş görünümü için güvenilir implant çözümleri.',
     },
     {
         'icon': iconThree,
         'title': 'Beyazlatma',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': ' Parlak ve sağlıklı bir gülümseme için profesyonel beyazlatma hizmeti.',
     },
     {
         'icon': iconFour,
         'title': 'Kanal Tedavi',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Dişlerinizi kurtarmak ve sağlığını korumak için hassas kanal tedavileri..',
     },
     {
         'icon': iconFive,
         'title': 'Ortodonti',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Dişlerinizi düzeltmek ve ideal gülüşe ulaşmak için ortodontik tedaviler.',
     },
     {
         'icon': iconSix,
         'title': 'Diş Çekimi',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Rahat ve güvenli bir şekilde diş çekimi işlemleri.',
     },
     {
         'icon': iconSeven,
         'title': 'Ağız İçi Bakım',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Sağlıklı diş ve diş etleri için kapsamlı bakım hizmetleri.',
     },
     {
         'icon': iconEight,
         'title': 'Diş Temizliği',
-        'description': 'Lorem ipsum is placeholder text commonly used in the graphic.',
+        'description': 'Plak ve tartar oluşumunu önleyerek ağız sağlığınızı koruyoruz.',
     }
 ];
 

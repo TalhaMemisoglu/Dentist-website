@@ -33,7 +33,7 @@ const Emergency = () => {
                             <SectionTitle
                                 subTitle="24 SAAT ACİL DESTEK"
                                 title="Yerel kliniğimizde nazik, dostça bir tedavi."
-                                description="Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups."
+                                description="Acil dental ihtiyaçlarınızda hızlı ve etkili çözümler sunuyoruz. Sağlığınız için bir telefon uzağınızdayız, bize hemen ulaşabilirsiniz!"
                             />
 
                             <div className="theme-btn">

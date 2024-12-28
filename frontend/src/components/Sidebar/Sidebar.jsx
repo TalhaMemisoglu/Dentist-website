@@ -104,7 +104,7 @@ const Sidebar = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/#" className={location.pathname === "/#" ? "active" : ""}>
+                <Link to="/addremove" className={location.pathname === "/#" ? "active" : ""}>
                   <span className="icon">➕</span> Personel Ekle/Çıkar
                 </Link>
               </li>

@@ -7,25 +7,25 @@ import call from '../../assets/footer/calling.png';
 import time from '../../assets/footer/time.png';
 import location from '../../assets/footer/location.png';
 import mail from '../../assets/footer/email.png';
+ 
 
 const Footer = () => {
 
     const footerMenu = [
         {
-            'name': 'SSS',
-            'link': '/about#faq'
+           
         }
     ];
 
     const footerContacts = [
         {
             'title': 'Telefon Numaramız',
-            'info': '+088 123 654 987',
+            'info': '+90 536 363 06 90',
             'icon': call
         },
         {
             'title': 'Mail Adresimiz',
-            'info': 'info@dentalist.com',
+            'info': 'readmedentist@gmail.com',
             'icon': mail
         },
         {
@@ -57,14 +57,7 @@ const Footer = () => {
                                 ))}
                             </ul>
                         </div>
-                        <div className="social-logo">
-                            <p>BİZİ TAKİP EDİN</p>
-                            <ul className='d-flex'>
-                                <li><a href="/"><FaFacebookF /></a></li>
-                                <li><a href="/"><FaTwitter /></a></li>
-                                <li><a href="/"><FaInstagram /></a></li>
-                            </ul>
-                        </div>
+                        
                     </div>
                     <div className="col-lg-6 col-md-6 col-sm-6">
                         <div className="footer-contact">
@@ -88,7 +81,7 @@ const Footer = () => {
                     </div>
                     <div className='copy-links'>
                         <ul>
-                            <li><Link to='/'>Kullanıcı koşulları</Link></li>
+                            <li><Link to='/terms-of-service'>Kullanıcı koşulları</Link></li>
                             <li><Link to='/'>Gizlilik sözleşmesi</Link></li>
                         </ul>
                     </div>
