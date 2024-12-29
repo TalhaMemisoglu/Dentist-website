@@ -246,3 +246,23 @@
 .error {
   color: #f44336;  /* Kırmızı renk */
 }
+
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
