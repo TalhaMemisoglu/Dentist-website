@@ -24,5 +24,8 @@ app.conf.beat_schedule = {
     'cancel-past-appointments': {
         'task': 'booking.tasks.auto_cancel_past_appointments',
         'schedule': crontab(hour=0, minute=0),  # Run at midnight
+        'options': {
+            'expires': 3600,  # Task expires after 1 hour
+        }
     },
 }

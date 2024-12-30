@@ -17,6 +17,7 @@ complete_appointment = AppointmentViewSet.as_view({'post': 'complete'})
 upcoming_appointments = AppointmentViewSet.as_view({'get': 'upcoming'})
 my_appointments = AppointmentViewSet.as_view({'get': 'my_appointments'})
 update_past_appointments = AppointmentViewSet.as_view({'get': 'update_past_appointments'})
+auto_cancel = AppointmentViewSet.as_view({'get': 'auto_cancel_past_appointments'})
 
 
 calendar_appointments = AppointmentViewSet.as_view({'get': 'calendar_appointments'})
@@ -55,6 +56,7 @@ urlpatterns = [
     path('api/booking/appointments/upcoming/', upcoming_appointments, name='upcoming-appointments'),
     path('api/booking/appointments/my-appointments/', my_appointments, name='my-appointments'),
     path('api/booking/appointments/update-past/', update_past_appointments, name='update-past-appointments'),
+    path('api/booking/appointments/auto-cancel/', auto_cancel, name='auto-cancel-appointments'),
 
     # Assistant calendar
     path('api/booking/appointments/calendar/', calendar_appointments, name='calendar-appointments'),

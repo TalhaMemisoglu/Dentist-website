@@ -44,32 +44,45 @@ def send_appointment_reminders():
 @shared_task
 def auto_cancel_past_appointments():
     """Automatically cancel past uncompleted appointments and notify patients"""
-    past_appointments = Appointment.objects.filter(
-        appointment_date__lt=now().date(),
-        status__in=['scheduled', 'confirmed']
-    )
-    
-    updated_count = 0
-    for appointment in past_appointments:
-        appointment.status = 'cancelled'
-        appointment.save()
-        updated_count += 1
+    try:
+        # Get yesterday's date to avoid timezone issues
+        yesterday = now().date() - timedelta(days=1)
         
-        # Send cancellation notification
-        try:
-            send_mail(
-                "Randevu iptali - Gelmediğiniz için",
-                f"Sayın {appointment.patient.get_full_name()},\n\n"
-                f"{appointment.appointment_date} tarihli"
-                f"{appointment.appointment_time.strftime('%H:%M')} saatindeki "
-                f"Dt. {appointment.dentist.get_full_name()} ile olan randevunuz iptal edilmiştir.\n\n "
-                f"Tekrar randevu oluşturmak için web sitemizden faydalanabilirsiniz.\n\n"
-                f"Anlayışınız için teşekkür ederiz, ve sağlıklı günler dileriz.",
-                settings.DEFAULT_FROM_EMAIL,
-                [appointment.patient.email],
-                fail_silently=False
-            )
-        except Exception as e:
-            print(f"Failed to send cancellation email to {appointment.patient.email}: {e}")
-    
-    return f"Updated {updated_count} past appointments to cancelled"
+        past_appointments = Appointment.objects.filter(
+            appointment_date__lte=yesterday,
+            status__in=['scheduled', 'confirmed']
+        ).select_related('patient', 'dentist')  # Optimize query
+        
+        updated_count = 0
+        for appointment in past_appointments:
+            # Update status
+            appointment.status = 'cancelled'
+            appointment.save()
+            updated_count += 1
+            
+            # Send cancellation notification
+            try:
+                send_mail(
+                    "Randevu iptali - Gelmediğiniz için",
+                    f"""Sayın {appointment.patient.get_full_name()},
+
+{appointment.appointment_date} tarihli {appointment.appointment_time.strftime('%H:%M')} saatindeki 
+Dt. {appointment.dentist.get_full_name()} ile olan randevunuz iptal edilmiştir.
+
+Tekrar randevu oluşturmak için web sitemizden faydalanabilirsiniz.
+
+Anlayışınız için teşekkür ederiz, ve sağlıklı günler dileriz.""",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [appointment.patient.email],
+                    fail_silently=True  # Changed to True to prevent task failure
+                )
+            except Exception as e:
+                print(f"Failed to send cancellation email to {appointment.patient.email}: {e}")
+                # Consider logging this error properly
+                
+        return f"Updated {updated_count} past appointments to cancelled"
+        
+    except Exception as e:
+        print(f"Error in auto_cancel_past_appointments task: {e}")
+        # Re-raise the exception so Celery knows the task failed
+        raise

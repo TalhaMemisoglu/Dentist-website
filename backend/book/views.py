@@ -302,16 +302,20 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
 
 
-
+    @action(detail=False, methods=['get'])
     def auto_cancel_past_appointments():
         
         past_appointments = Appointment.objects.filter(
-            appointment_date__lt=Now().date(),
-            status__in=['scheduled', 'confirmed']
+        appointment_date__lt=Now().date(),
+        status__in=['scheduled', 'confirmed']
         )
         updated_count = past_appointments.count()
         past_appointments.update(status='cancelled')
-        return updated_count
+    
+        return Response({
+            'message': f'{updated_count} geçmiş randevu iptal edildi',
+            'updated_count': updated_count
+        })
 
     @action(detail=True, methods=['post', 'delete'])
     def cancel(self, request, pk=None):
