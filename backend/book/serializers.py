@@ -2,6 +2,7 @@ from django.forms import ValidationError
 from rest_framework import serializers
 from .models import Appointment
 from api.models import CustomUser
+from datetime import datetime, timedelta
 
 class DentistSerializer(serializers.ModelSerializer):
     class Meta:
