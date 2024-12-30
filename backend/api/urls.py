@@ -1,12 +1,8 @@
 from django.urls import path, include
 from .views import CreateUserView, ProfileView, LoginView, LogoutView, DentistListView,CurrentUserView,VerifyEmailView,UpdatePasswordView,UpdateUserProfileView
-from book.views import AppointmentViewSet
-from .views import PasswordResetRequestView, PasswordResetView
-from rest_framework.routers import DefaultRouter   
+from .views import PasswordResetRequestView, PasswordResetView   
 from .views import StaffManagementView, StaffDetailView
 
-router = DefaultRouter()
-router.register(r'appointment', AppointmentViewSet, basename='appointment')
 
 urlpatterns = [
     path('register/', CreateUserView.as_view(), name='register'),
@@ -24,5 +20,4 @@ urlpatterns = [
     path('admin/staff/', StaffManagementView.as_view(), name='staff-list'),
     path('admin/staff/<int:user_id>/', StaffDetailView.as_view(), name='staff-detail'),
 
-    path('', include(router.urls)),
 ]
