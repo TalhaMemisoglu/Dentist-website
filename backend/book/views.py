@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, time
 from .models import Appointment
 from .serializers import AppointmentSerializer, DentistSerializer, AdminCalendarAppointmentSerializer
 from api.models import CustomUser
-from django.db.models import Q
+from django.db.models import Q, Count
 from rest_framework.viewsets import ViewSet
 from django.db.models.functions import Now
 
@@ -485,8 +485,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         """
 
 
-        @action(detail=False) # Dentist calendar view
-        def dentist_calendar(self, request):
+    @action(detail=False) # Dentist calendar view
+    def dentist_calendar(self, request):
            
             if request.user.user_type != 'dentist':
                 return Response(
@@ -530,8 +530,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
             return Response(calendar_data)
 
-        @action(detail=False) # Dentist calendar view with date range
-        def dentist_appointments_by_date(self, request):
+    @action(detail=False) # Dentist calendar view with date range
+    def dentist_appointments_by_date(self, request):
             if request.user.user_type != 'dentist':
                 return Response(
                     {"error": "Sadece diş hekimleri randevularına erişebilir"},
@@ -558,8 +558,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(appointments, many=True)
             return Response(serializer.data)
 
-        @action(detail=False)
-        def dentist_daily_schedule(self, request):
+    @action(detail=False)
+    def dentist_daily_schedule(self, request):
             if request.user.user_type != 'dentist':
                 return Response(
                     {"error": "Sadece diş hekimleri takvimlerine erişebilir."},
