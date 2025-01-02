@@ -41,10 +41,26 @@ const Login = () => {
                 throw new Error("Invalid login response");
             }
         } catch (error) {
+            // Detaylı hata loglaması
             if (error.response) {
-                const errorMessage = error.response.data.detail || "Yanlış kişi bilgileri.";
-                setError(errorMessage);
-                alert(`Giriş Başarısız oldu: ${errorMessage}`);
+                console.error('Error response:', {
+                    status: error.response.status,
+                    data: error.response.data,
+                    headers: error.response.headers
+                });
+ 
+                const errorMessage = error.response.data.detail ||
+                    error.response.data.message ||
+                    error.response.data.error ||
+                    "Giriş başarısız oldu.";
+                
+                if (error.response.status === 500) {
+                    setError("Sunucu hatası oluştu. Lütfen sistem yöneticisi ile iletişime geçin.");
+                } else if (error.response.status === 401) {
+                    setError("Email veya şifre hatalı.");
+                } else {
+                    setError(errorMessage);
+                }
             } else if (error.request) {
                 setError("Serverdan yanıt yok. Lütfen tekrar deneyin.");
                 alert("Giriş başarısız oldu: Serverdan yanıt yok.");
@@ -55,6 +71,7 @@ const Login = () => {
         } finally {
             setLoading(false);
         }
+        
     };
 
     return (
