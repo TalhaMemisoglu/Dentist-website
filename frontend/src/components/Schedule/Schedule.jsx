@@ -23,12 +23,10 @@ const Schedule = () => {
                 }
 
                 const response = await api.get("/api/user/");
-                console.log()
                 const { user_type } = response.data;
                 setUserType(user_type);
-
-                // Eğer kullanıcı tipi admin, doctor, veya assistant değilse yönlendir
-                if (!["admin", "doctor", "assistant"].includes(user_type)) {
+                // Eğer kullanıcı tipi admin, dentist, veya assistant değilse yönlendir
+                if (!["admin", "dentist", "assistant"].includes(user_type)) {
                     console.warn("Unauthorized access. Redirecting...");
                     navigate("/unauthorized");
                     return;
@@ -55,8 +53,8 @@ const Schedule = () => {
                     case "admin":
                         apiUrl = "/api/admin-calendar/all_appointments/";
                         break;
-                    case "doctor":
-                        apiUrl = "/api/doctor-calendar/appointments/";
+                    case "dentist":
+                        apiUrl = "/api/booking/appointments/dentist-calendar";
                         break;
                     case "assistant":
                         apiUrl = "/api/assistant-calendar/schedule/";
@@ -67,15 +65,20 @@ const Schedule = () => {
                 }
 
                 const response = await api.get(apiUrl);
-
+                console.log(response.data);
                 // API'den dönen veriyi Big Calendar formatına çevir
-                const fetchedEvents = response.data.map((event) => ({
-                    PatientName: event.patient_name,
-                    treatment: event.treatment_name,
-                    start: new Date(`${event.appointment_date}T${event.appointment_time}`),
-                    end: new Date(`${event.appointment_date}T${event.appointment_time}`),
-                }));
+                const fetchedEvents = response.data.map((event) => {
+                    return {
+                        title: `${event.patient_name} - ${event.treatment}`,
+                        PatientName: event.patient_name,
+                        treatment: event.treatment,
+                        start: new Date(event.start),
+                        end: new Date(event.end),
+                        status: event.status
+                    };
+                });
 
+                console.log("fetchedEvents: ", fetchedEvents);
                 setEvents(fetchedEvents);
             } catch (error) {
                 console.error("Error fetching events:", error);

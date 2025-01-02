@@ -1,0 +1,17 @@
+.schedule-page-container {
+  display: flex; /* Sidebar and content side by side */
+  height: 100vh; /* Full screen height */
+
+  .sidebar-wrapper {
+    flex: 0 0 250px; /* Fixed width for sidebar */
+    background-color: #f8f9fa; /* Sidebar background color */
+    border-right: 1px solid #ddd; /* Right border for sidebar */
+  }
+
+  .schedule-wrapper {
+    flex: 1; /* Take up remaining space */
+    padding: 20px; /* Content padding */
+    background-color: #ffffff; /* Content background color */
+    overflow-y: auto; /* Vertical scroll if content overflows */
+  }
+}

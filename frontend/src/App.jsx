@@ -12,14 +12,17 @@ import Patients from './pages/Patients/Patients';
 import Choose from './pages/Choose/Choose';
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Schedule from './pages/Schedule/Schedule';
 import Appointment from './pages/Appointment/Appointment'
 import VerifyEmail from './pages/VerifyEmail'
 import RequestPasswordReset from './pages/PasswordReset/RequestPasswordReset'
 import ResetPassword from './pages/PasswordReset/ResetPassword'
 import ProfilePage from './pages/ProfilePage/ProfilePage'
-import PatientAppointmentsPage from './pages/PatientAppointmentsPage/PatientAppointmentsPage'
+import AppointmentsPage from './pages/AppointmentsPage/AppointmentsPage'
 import AddRemove from './pages/AddRemove/AddRemove'
+import Sidebar from "./components/Sidebar/Sidebar";
+import SchedulePage from './pages/SchedulePage/SchedulePage';
+import Schedule from './components/Schedule/Schedule'; // for testing purposes. it should be removed in production.
+
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -35,8 +38,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/patient-appointments-page" element={<PatientAppointmentsPage />} />
+          <Route path="/appointments-page" element={<AppointmentsPage />} />
           <Route path="/profile-page" element={<ProfilePage />} />
+          <Route path="/schedule-page" element={<SchedulePage />} />
           <Route path="/about" element={<About />} />
           <Route path="/singleservice" element={<Services />} />
           <Route path="/contact" element={<Contactus />} />
@@ -46,7 +50,6 @@ function App() {
           <Route path="/patients" element={<Patients />} />
           <Route path="/appointment" element={<Appointment />} />
           <Route path="/choose" element={<Choose />} />
-          <Route path="/schedule" element={<Schedule />} />
           <Route path="/verify-email/:userId" element={<VerifyEmail />} />
           <Route path="/request-password-reset" element={<RequestPasswordReset />} />
           <Route path="/addremove" element={<AddRemove />} />

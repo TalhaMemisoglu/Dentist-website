@@ -3,9 +3,12 @@ import { useState, useEffect } from 'react';
 import './Navbar.scss';
 import logo from './../../assets/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { ACCESS_TOKEN } from '../../constants';
 
 const Navbar = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userType, setUserType] = useState(null);
 
     // Check authentication status on component mount
     useEffect(() => {
@@ -16,6 +19,29 @@ const Navbar = () => {
             setIsAuthenticated(false);
         }
     }, []);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const token = localStorage.getItem(ACCESS_TOKEN);
+                if (!token) return;
+                
+                const response = await axios.get("/api/user/", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                
+                if (response.status === 200) {
+                    setUserType(response.data.user_type);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error.response || error.message);
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchUserInfo();
+        }
+    }, [isAuthenticated]);
 
     const navigate = useNavigate();
 
@@ -48,6 +74,22 @@ const Navbar = () => {
         }
     ];
 
+    // Helper function to get dashboard path
+    const getDashboardPath = () => {
+        switch (userType) {
+            case 'patient':
+                return '/appointments-page';
+            case 'dentist':
+                return '/schedule-page';
+            case 'assistant':
+                return '/schedule-page';
+            case 'manager':
+                return '/schedule-page';
+            default:
+                return '';
+        }
+    };
+
     return (
         <div className='main-nav'>
             <div className="container">
@@ -73,7 +115,7 @@ const Navbar = () => {
                                 {/* Show Dashboard link if authenticated */}
                                 {isAuthenticated && (
                                     <li className="nav-item">
-                                        <Link className="nav-link" to="/patient-appointments-page">
+                                        <Link className="nav-link" to={getDashboardPath()}>
                                             Dashboard
                                         </Link>
                                     </li>
