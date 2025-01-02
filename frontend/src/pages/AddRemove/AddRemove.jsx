@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
-
+import api from "../../api";
 import "./AddRemove.scss";
 import Sidebar from "../../components/Sidebar/Sidebar";
 
@@ -11,52 +10,36 @@ const AddRemove = () => {
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
   const [formData, setFormData] = useState({
-    ad: "",
-    soyad: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    telefon: "",
-    userType: "",
+    phone: "",
+    user_type: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-    fetchStaff();
-  }, [navigate]);
-
   const fetchStaff = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("access_token");
-      const response = await axios.get(`${process.env.VITE_API_URL}/api/admin/staff/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get("/api/admin/staff/");
       setStaff(response.data);
     } catch (error) {
-      if (error.response?.status === 401) {
-        navigate("/login");
-      }
-      toast.error(error.response?.data?.error || "Personelleri getirirken bir hata oluştu.");
+      toast.error("Personelleri getirirken bir hata oluştu.");
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchStaff();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "telefon") {
-      // Sadece 10 hane kabul edilir
-      // Only accept numbers and limit to 10 digits
+    if (name === "phone") {
       const cleaned = value.replace(/\D/g, "").slice(0, 10);
       setFormData({ ...formData, [name]: cleaned });
       return;
@@ -64,20 +47,20 @@ const AddRemove = () => {
 
     setFormData({ ...formData, [name]: value });
     
-    if (errors[name]) { // Clear error for this field when user starts typing
+    if (errors[name]) {
       setErrors({ ...errors, [name]: null });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.ad.trim()) newErrors.ad = "Lütfen ad giriniz.";
-    if (!formData.soyad.trim()) newErrors.soyad = "Lütfen soyad giriniz.";
+    if (!formData.first_name.trim()) newErrors.first_name = "Lütfen ad giriniz.";
+    if (!formData.last_name.trim()) newErrors.last_name = "Lütfen soyad giriniz.";
     if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Lütfen geçerli bir e-posta adresi giriniz.";
-    if (!formData.telefon.trim() || formData.telefon.length !== 10)
-      newErrors.telefon = "Lütfen 10 haneli bir telefon numarası giriniz.";
-    if (!formData.userType.trim()) newErrors.userType = "Lütfen bir kullanıcı tipi seçiniz.";
+    if (!formData.phone.trim() || formData.phone.length !== 10)
+      newErrors.phone = "Lütfen 10 haneli bir telefon numarası giriniz.";
+    if (!formData.user_type.trim()) newErrors.user_type = "Lütfen bir kullanıcı tipi seçiniz.";
     return newErrors;
   };
 
@@ -90,37 +73,24 @@ const AddRemove = () => {
 
     try {
       setSubmitLoading(true);
-      const token = localStorage.getItem("access_token");
       const formattedData = {
         ...formData,
-        telefon: formData.telefon.replace(/\D/g, ""), // Remove any non-digit characters
+        phone: formData.phone.replace(/\D/g, ""),
       };
 
-      await axios.post(
-        `${process.env.VITE_API_URL}/api/admin/staff/`,
-        formattedData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      await api.post("/api/admin/staff/", formattedData);
       toast.success("Personel başarıyla eklendi!");
       setFormData({
-        ad: "",
-        soyad: "",
+        first_name: "",
+        last_name: "",
         email: "",
-        telefon: "",
-        user_type: "",
+        phone: "",
+        user_type: "", 
       });
       setErrors({});
       fetchStaff();
     } catch (error) {
-      if (error.response?.status === 401) {
-        navigate("/login");
-      }
-      toast.error(error.response?.data?.error || "Personel eklerken bir hata oluştu.");
+      toast.error("Personel eklerken bir hata oluştu.");
     } finally {
       setSubmitLoading(false);
     }
@@ -132,147 +102,135 @@ const AddRemove = () => {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
-      await axios.delete(
-        `${process.env.VITE_API_URL}/api/admin/staff/${staffId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      await api.delete(`/api/admin/staff/${staffId}/`);
       toast.success("Personel başarıyla silindi!");
       fetchStaff();
     } catch (error) {
-      if (error.response?.status === 401) {
-        navigate("/login");
-      }
-      toast.error(error.response?.data?.error || "Personel silinirken bir hata oluştu.");
+      toast.error("Personel silinirken bir hata oluştu.");
     }
   };
 
   return (
     <div className="add-remove-page">
-    <Sidebar />
-    <div className="add-remove-container">
-      <h1>Personel Ekle / Sil</h1>
-      <div className="form">
-        <div className="form-group">
-          <input
-            type="text"
-            name="ad"
-            placeholder="Ad"
-            value={formData.ad}
-            onChange={handleChange}
-            className={errors.ad ? "error-input" : ""}
-          />
-          {errors.ad && <span className="error">{errors.ad}</span>}
-        </div>
-        <div className="form-group">
-          <input
-            type="text"
-            name="soyad"
-            placeholder="Soyad"
-            value={formData.soyad}
-            onChange={handleChange}
-            className={errors.soyad ? "error-input" : ""}
-          />
-          {errors.soyad && <span className="error">{errors.soyad}</span>}
-        </div>
-        <div className="form-group">
-          <input
-            type="email"
-            name="email"
-            placeholder="E-posta (örn: ornek@domain.com)"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? "error-input" : ""}
-          />
-          {errors.email && <span className="error">{errors.email}</span>}
-        </div>
-        <div className="form-group">
-          <input
-            type="tel"
-            name="telefon"
-            placeholder="Telefon (5xx xxx xx xx)"
-            value={formData.telefon}
-            onChange={handleChange}
-            className={errors.telefon ? "error-input" : ""}
-          />
-          {errors.telefon && <span className="error">{errors.telefon}</span>}
-        </div>
-        <div className="form-group">
-          <select
-            name="userType"
-            value={formData.userType}
-            onChange={handleChange}
-            className={errors.userType ? "error-input" : ""}
+      <Sidebar />
+      <div className="add-remove-container">
+        <h1>Personel Ekle / Sil</h1>
+        <div className="form">
+          <div className="form-group">
+            <input
+              type="text"
+              name="first_name"
+              placeholder="Ad"
+              value={formData.first_name}
+              onChange={handleChange}
+              className={errors.first_name ? "error-input" : ""}
+            />
+            {errors.first_name && <span className="error">{errors.first_name}</span>}
+          </div>
+          <div className="form-group">
+            <input
+              type="text"
+              name="last_name"
+              placeholder="Soyad"
+              value={formData.last_name}
+              onChange={handleChange}
+              className={errors.last_name ? "error-input" : ""}
+            />
+            {errors.last_name && <span className="error">{errors.last_name}</span>}
+          </div>
+          <div className="form-group">
+            <input
+              type="email"
+              name="email"
+              placeholder="E-posta (örn: ornek@domain.com)"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? "error-input" : ""}
+            />
+            {errors.email && <span className="error">{errors.email}</span>}
+          </div>
+          <div className="form-group">
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Telefon (5xx xxx xx xx)"
+              value={formData.phone}
+              onChange={handleChange}
+              className={errors.phone ? "error-input" : ""}
+            />
+            {errors.phone && <span className="error">{errors.phone}</span>}
+          </div>
+          <div className="form-group">
+            <select
+              name="user_type"
+              value={formData.user_type}
+              onChange={handleChange}
+              className={errors.user_type ? "error-input" : ""}
+            >
+              <option value="">Kullanıcı Tipi Seçiniz</option>
+              <option value="assistant">Asistan</option>
+              <option value="dentist">Diş Hekimi</option>
+              <option value="manager">Yönetici</option>
+            </select>
+            {errors.user_type && <span className="error">{errors.user_type}</span>}
+          </div>
+          <button 
+            onClick={handleAdd} 
+            disabled={submitLoading}
+            className="add-button"
           >
-            <option value="">Kullanıcı Tipi Seçiniz</option>
-            <option value="assistant">Asistan</option>
-            <option value="dentist">Diş Hekimi</option>
-            <option value="manager">Yönetici</option>
-          </select>
-          {errors.userType && <span className="error">{errors.userType}</span>}
+            {submitLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Ekle"
+            )}
+          </button>
         </div>
-        <button 
-          onClick={handleAdd} 
-          disabled={submitLoading}
-          className="add-button"
-        >
-          {submitLoading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Ekle"
-          )}
-        </button>
-      </div>
-      <div className="staff-list">
-        {loading ? (
-          <div className="loading-container">
-            <CircularProgress />
-            <p>Personel listesi yükleniyor...</p>
-          </div>
-        ) : staff.length === 0 ? (
-          <div className="no-staff">
-            <p>Henüz personel bulunmamaktadır.</p>
-          </div>
-        ) : (
-          staff.map((member) => (
-            <div className="staff-item" key={member.id}>
-              <div className="details">
-                <p>
-                  <strong>Ad Soyad:</strong> {member.ad} {member.soyad}
-                </p>
-                <p>
-                  <strong>E-posta:</strong> {member.email}
-                </p>
-                <p>
-                  <strong>Telefon:</strong> {member.telefon}
-                </p>
-                <p>
-                  <strong>Kullanıcı Tipi:</strong>{" "}
-                  {member.userType === "dentist"
-                    ? "Diş Hekimi"
-                    : member.userType === "assistant"
-                    ? "Asistan"
-                    : "Yönetici"}
-                </p>
-              </div>
-              <button
-                onClick={() => handleRemove(member.id)}
-                className="remove-button"
-              >
-                Sil
-              </button>
+        <div className="staff-list">
+          {loading ? (
+            <div className="loading-container">
+              <CircularProgress />
+              <p>Personel listesi yükleniyor...</p>
             </div>
-          ))
-        )}
+          ) : staff.length === 0 ? (
+            <div className="no-staff">
+              <p>Henüz personel bulunmamaktadır.</p>
+            </div>
+          ) : (
+            staff.map((member) => (
+              <div className="staff-item" key={member.id}>
+                <div className="details">
+                  <p>
+                    <strong>Ad Soyad:</strong> {member.first_name} {member.last_name}
+                  </p>
+                  <p>
+                    <strong>E-posta:</strong> {member.email}
+                  </p>
+                  <p>
+                    <strong>Telefon:</strong> {member.phone}
+                  </p>
+                  <p>
+                    <strong>Kullanıcı Tipi:</strong>{" "}
+                    {member.user_type === "dentist"
+                      ? "Diş Hekimi"
+                      : member.user_type === "assistant"
+                      ? "Asistan"
+                      : "Yönetici"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleRemove(member.id)}
+                  className="remove-button"
+                >
+                  Sil
+                </button>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default AddRemove;

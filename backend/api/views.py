@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 from rest_framework.permissions import IsAdminUser
 from .serializers import StaffManagementSerializer
 
-
+from rest_framework.authentication import TokenAuthentication
 
 # Email Verification View
 class VerifyEmailView(generics.GenericAPIView):

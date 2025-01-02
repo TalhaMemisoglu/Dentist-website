@@ -177,6 +177,19 @@ class StaffManagementSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'user_type']
         read_only_fields = ['username']  # Username will be auto-generated
 
+    def validate(self, data):
+        logger.debug(f"Validating data: {data}")
+        required_fields = ['email', 'first_name', 'last_name', 'user_type']
+        missing_fields = [field for field in required_fields if field not in data]
+        
+        if missing_fields:
+            raise serializers.ValidationError(
+                f"Missing required fields: {', '.join(missing_fields)}"
+            )
+        
+        return data
+    
+    
     def validate_user_type(self, value):
         valid_staff_types = ['dentist', 'assistant', 'manager']
         if value not in valid_staff_types:
@@ -184,51 +197,59 @@ class StaffManagementSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # Generate username
-        first_name = validated_data.get('first_name', '').lower()
-        last_name = validated_data.get('last_name', '').lower()
-        base_username = f"{first_name}{last_name}"
-        username = base_username
-        counter = 1
-        while CustomUser.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-        validated_data['username'] = username
-
-        # Generate random password
-        temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-        
-        # To avoid conflict remove username from validated_data if it exists
-        validated_data.pop('username', None)
-
-        # Create user
-        user = CustomUser.objects.create_user(
-            username=username,
-            password=temp_password,
-            **validated_data
-        )
-
-        # Set remaining fields
-        for attr, value in validated_data.items():
-            setattr(user, attr, value)
-        user.save()
-
-        # Send email with credentials
         try:
-            send_mail(
-                "Your Account Credentials",
-                f"""
-                Your account has been created with the following credentials:
-                Username: {username}
-                Temporary Password: {temp_password}
-                
-                Please change your password after your first login.
-                """,
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
-        except Exception as e:
-            print(f"Failed to send email: {e}")
+            # Generate username from first and last name
+            first_name = validated_data.get('first_name', '').lower()
+            last_name = validated_data.get('last_name', '').lower()
+            base_username = f"{first_name}{last_name}"
+            username = base_username
+            counter = 1
+            
+            # Keep trying until we find a unique username
+            while CustomUser.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
 
-        return user
+            # Generate random password
+            temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+
+            # Prepare user data
+            user_data = {
+                'username': username,  # Include username in the main data
+                'first_name': validated_data.get('first_name', ''),
+                'last_name': validated_data.get('last_name', ''),
+                'email': validated_data.get('email', ''),
+                'phone': validated_data.get('phone', ''),
+                'user_type': validated_data.get('user_type', '')
+            }
+
+            # Create the user
+            user = CustomUser.objects.create_user(
+                password=temp_password,
+                **user_data
+            )
+
+            # Send email with credentials
+            try:
+                send_mail(
+                    "Your Account Credentials",
+                    f"""
+                    Your account has been created with the following credentials:
+                    Username: {username}
+                    Temporary Password: {temp_password}
+                    
+                    Please change your password after your first login.
+                    """,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                logger.error(f"Failed to send email: {e}")
+                # Continue even if email fails, but log the error
+
+            return user
+            
+        except Exception as e:
+            logger.error(f"Error creating user: {e}")
+            raise serializers.ValidationError(f"Error creating user: {str(e)}")
