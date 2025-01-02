@@ -234,11 +234,11 @@ class StaffManagementSerializer(serializers.ModelSerializer):
                 send_mail(
                     "Your Account Credentials",
                     f"""
-                    Your account has been created with the following credentials:
-                    Username: {username}
-                    Temporary Password: {temp_password}
+                    Hesabınız Oluşturulmuştur:
+                    Kullanıcı Adı: {username}
+                    Geçici Şifre: {temp_password}
                     
-                    Please change your password after your first login.
+                    İlk girişiniz sonrası şifrenizi değiştiriniz.
                     """,
                     settings.DEFAULT_FROM_EMAIL,
                     [user.email],

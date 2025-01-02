@@ -74,11 +74,10 @@ Tekrar randevu oluşturmak için web sitemizden faydalanabilirsiniz.
 Anlayışınız için teşekkür ederiz, ve sağlıklı günler dileriz.""",
                     settings.DEFAULT_FROM_EMAIL,
                     [appointment.patient.email],
-                    fail_silently=True  # Changed to True to prevent task failure
+                    fail_silently=True
                 )
             except Exception as e:
                 print(f"Failed to send cancellation email to {appointment.patient.email}: {e}")
-                # Consider logging this error properly
                 
         return f"Updated {updated_count} past appointments to cancelled"
         
