@@ -62,12 +62,12 @@ const Sidebar = () => {
           {userType === "dentist" && (
             <>
               <li>
-                <Link to="/appointments" className={location.pathname === "/appointments" ? "active" : ""}>
+                <Link to="/schedule-page" className={location.pathname === "/schedule-page" ? "active" : ""}>
                   <span className="icon">📅</span> Takvimi Gör
                 </Link>
               </li>
               <li>
-                <Link to="/add-appointment" className={location.pathname === "/add-appointment" ? "active" : ""}>
+                <Link to="/appointments-page" className={location.pathname === "/appointments-page" ? "active" : ""}>
                   <span className="icon">➕</span> Randevu Geçmişi
                 </Link>
               </li>
@@ -76,7 +76,7 @@ const Sidebar = () => {
           {userType === "patient" && (
             <>
               <li>
-                <Link to="/patient-appointments-page" className={location.pathname === "/patient-appointments-page" ? "active" : ""}>
+                <Link to="/appointments-page" className={location.pathname === "/appointments-page" ? "active" : ""}>
                   <span className="icon">📅</span> Randevularım
                 </Link>
               </li>
@@ -90,7 +90,7 @@ const Sidebar = () => {
           {userType === "assistant" && (
             <>
               <li>
-                <Link to="/#" className={location.pathname === "/#" ? "active" : ""}>
+                <Link to="/schedule-page" className={location.pathname === "/schedule-page" ? "active" : ""}>
                   <span className="icon">📅</span> Takvimi Gör
                 </Link>
               </li>
@@ -99,7 +99,7 @@ const Sidebar = () => {
           {userType === "manager" && (
             <>
               <li>
-                <Link to="/#" className={location.pathname === "/#" ? "active" : ""}>
+                <Link to="/schedule-page" className={location.pathname === "/schedule-page" ? "active" : ""}>
                   <span className="icon">📅</span> Takvimi Gör
                 </Link>
               </li>
@@ -110,7 +110,6 @@ const Sidebar = () => {
               </li>
             </>
           )}
-
           <li>
             <Link to="/profile-page" className={location.pathname === "/profile-page" ? "active" : ""}>
               <span className="icon">⚙️</span> Profil

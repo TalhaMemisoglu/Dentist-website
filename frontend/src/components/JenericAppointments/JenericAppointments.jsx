@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../api";
-import "./PatientAppointments.scss";
+import "./JenericAppointments.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -8,9 +8,23 @@ const PatientAppointments = () => {
   const [activeAppointments, setActiveAppointments] = useState([]);
   const [pastAppointments, setPastAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [expandCancel, setExpandCancel] = useState(null);
   const [alert, setAlert] = useState(null);
+  const [userType, setUserType] = useState(null);
+
+  // Add user type check at the beginning
+  useEffect(() => {
+    const fetchUserType = async () => {
+      try {
+        const response = await api.get("/api/user/");
+        setUserType(response.data.user_type);
+      } catch (error) {
+        console.error("Error fetching user type:", error);
+      }
+    };
+    fetchUserType();
+  }, []);
 
   // Function to handle trash bin click and start shrinking process
   const handleTrashClick = (id) => {
@@ -48,7 +62,12 @@ const PatientAppointments = () => {
       try {
         setIsLoading(true);
         setError("");
-        const response = await api.get("/api/booking/appointments");
+        
+        // Use different endpoints based on user type
+        const endpoint = userType === 'dentist'
+          ? "/api/booking/appointments/dentist-daily-schedule"
+          : "/api/booking/appointments";
+        const response = await api.get(endpoint);
         
         const appointments = Array.isArray(response.data.appointments) 
           ? response.data.appointments 
@@ -84,8 +103,10 @@ const PatientAppointments = () => {
       }
     };
 
-    fetchAppointments();
-  }, []);
+    if (userType) {
+      fetchAppointments();
+    }
+  }, [userType]);
 
   return (
     <div className="appointments-container">
@@ -158,7 +179,11 @@ const PatientAppointments = () => {
                         </p>
                       </div>
                       <p className="appointment-doctor">
-                        Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong>
+                        {userType === 'dentist' ? (
+                          <>Hasta: <strong>{appointment.patient_name || "Unknown"}</strong></>
+                        ) : (
+                          <>Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong></>
+                        )}
                       </p>
                     </div>
 
@@ -247,7 +272,11 @@ const PatientAppointments = () => {
                         </p>
                       </div>
                       <p className="appointment-doctor">
-                        Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong>
+                        {userType === 'dentist' ? (
+                          <>Hasta: <strong>{appointment.patient_name || "Unknown"}</strong></>
+                        ) : (
+                          <>Doktor: <strong>{appointment.dentist_name || "Unknown"}</strong></>
+                        )}
                       </p>
                     </div>
 
