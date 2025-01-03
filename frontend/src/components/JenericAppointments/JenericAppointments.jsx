@@ -65,36 +65,72 @@ const PatientAppointments = () => {
         
         // Use different endpoints based on user type
         const endpoint = userType === 'dentist'
-          ? "/api/booking/appointments/dentist-daily-schedule"
+          ? "/api/booking/appointments/dentist-calendar"
           : "/api/booking/appointments";
         const response = await api.get(endpoint);
         
-        const appointments = Array.isArray(response.data.appointments) 
-          ? response.data.appointments 
-          : [];
+        if (userType === 'dentist') {
+          // Handle dentist calendar format
+          const appointments = response.data.map(apt => ({
+            id: apt.id,
+            appointment_date: apt.start.split('T')[0],
+            appointment_time: apt.start.split('T')[1].substring(0, 5),
+            status: apt.status,
+            treatment_name: apt.treatment,
+            patient_name: apt.patient_name,
+            // Calculate duration from start and end times
+            duration: Math.round((new Date(apt.end) - new Date(apt.start)) / 1000 / 60)
+          }));
 
-        const now = new Date();
-        
-        // Split and sort appointments
-        const active = [];
-        const past = [];
-        
-        appointments.forEach(apt => {
-          const appointmentDateTime = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
-          if (appointmentDateTime >= now && apt.status.toLowerCase() === 'scheduled') {
-            active.push(apt);
-          } else {
-            past.push(apt);
-          }
-        });
+          const now = new Date();
+          const active = [];
+          const past = [];
+          
+          appointments.forEach(apt => {
+            const appointmentDateTime = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
+            if (appointmentDateTime >= now && apt.status.toLowerCase() === 'scheduled') {
+              active.push(apt);
+            } else {
+              past.push(apt);
+            }
+          });
 
-        // Sort both arrays by date
-        const sortByDate = (a, b) => 
-          new Date(`${a.appointment_date}T${a.appointment_time}`) - 
-          new Date(`${b.appointment_date}T${b.appointment_time}`);
+          // Sort both arrays by date
+          const sortByDate = (a, b) => 
+            new Date(`${a.appointment_date}T${a.appointment_time}`) - 
+            new Date(`${b.appointment_date}T${b.appointment_time}`);
 
-        setActiveAppointments(active.sort(sortByDate));
-        setPastAppointments(past.sort(sortByDate));
+          setActiveAppointments(active.sort(sortByDate));
+          setPastAppointments(past.sort(sortByDate));
+        } else {
+          // Existing patient appointments handling
+          const appointments = Array.isArray(response.data.appointments) 
+            ? response.data.appointments 
+            : [];
+
+          const now = new Date();
+          
+          // Split and sort appointments
+          const active = [];
+          const past = [];
+          
+          appointments.forEach(apt => {
+            const appointmentDateTime = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
+            if (appointmentDateTime >= now && apt.status.toLowerCase() === 'scheduled') {
+              active.push(apt);
+            } else {
+              past.push(apt);
+            }
+          });
+
+          // Sort both arrays by date
+          const sortByDate = (a, b) => 
+            new Date(`${a.appointment_date}T${a.appointment_time}`) - 
+            new Date(`${b.appointment_date}T${b.appointment_time}`);
+
+          setActiveAppointments(active.sort(sortByDate));
+          setPastAppointments(past.sort(sortByDate));
+        }
       } catch (err) {
         console.error("Error fetching appointments:", err);
         setError("Failed to load appointments. Please try again.");
