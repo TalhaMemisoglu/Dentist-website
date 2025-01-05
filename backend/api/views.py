@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 from rest_framework.permissions import IsAdminUser
-from .serializers import StaffManagementSerializer
+from .serializers import StaffManagementSerializer, StaffListSerializer
 
 from rest_framework.authentication import TokenAuthentication
 
@@ -268,7 +268,8 @@ class UpdatePasswordView(APIView):
     API endpoints
 
     List all staff
-    GET /api/admin/staff/
+    GET /api/admin/staff/ --> html
+    GET /api/staff/list/ --> json
 
     Add new staff member
     POST /api/admin/staff/
@@ -295,7 +296,19 @@ class UpdatePasswordView(APIView):
 '''
 
 
-
+class StaffListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        staff = CustomUser.objects.filter(
+            user_type__in=['dentist', 'assistant', 'manager']
+        ).order_by('user_type', 'first_name')
+        
+        serializer = StaffListSerializer(staff, many=True)
+        return Response({
+            'count': len(serializer.data),
+            'results': serializer.data
+        }, status=status.HTTP_200_OK)
 
 
 class StaffManagementView(APIView):

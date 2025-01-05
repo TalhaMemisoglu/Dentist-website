@@ -253,3 +253,14 @@ class StaffManagementSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.error(f"Error creating user: {e}")
             raise serializers.ValidationError(f"Error creating user: {str(e)}")
+
+
+class StaffListSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'email', 'full_name', 'phone', 'user_type']
+        
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()

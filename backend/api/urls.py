@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import CreateUserView, ProfileView, LoginView, LogoutView, DentistListView,CurrentUserView,VerifyEmailView,UpdatePasswordView,UpdateUserProfileView
 from .views import PasswordResetRequestView, PasswordResetView   
-from .views import StaffManagementView, StaffDetailView
+from .views import StaffManagementView, StaffDetailView, StaffListView
 
 
 urlpatterns = [
@@ -19,5 +19,7 @@ urlpatterns = [
 
     path('admin/staff/', StaffManagementView.as_view(), name='staff-list'),
     path('admin/staff/<int:user_id>/', StaffDetailView.as_view(), name='staff-detail'),
+    
+    path('staff/list/', StaffListView.as_view(), name='staff-list'),
 
 ]
