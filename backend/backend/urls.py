@@ -23,6 +23,7 @@ auto_cancel = AppointmentViewSet.as_view({'get': 'auto_cancel_past_appointments'
 calendar_appointments = AppointmentViewSet.as_view({'get': 'calendar_appointments'})
 appointments_by_date = AppointmentViewSet.as_view({'get': 'appointments_by_date'})
 appointments_stats = AppointmentViewSet.as_view({'get': 'appointments_stats'})
+calendar_by_dentist = AppointmentViewSet.as_view({'get': 'appointments_by_dentist'})
 
 
 dentist_calendar = AppointmentViewSet.as_view({'get': 'dentist_calendar'})
@@ -62,7 +63,8 @@ urlpatterns = [
     path('api/booking/appointments/calendar/', calendar_appointments, name='calendar-appointments'),
     path('api/booking/appointments/by-date/', appointments_by_date, name='appointments-by-date'),
     path('api/booking/appointments/stats/', appointments_stats, name='appointments-stats'),
-    
+    path('api/booking/appointments/by-dentist/', calendar_by_dentist, name='calendar_by_dentist'),
+
     # Admin calendar 
     path('api/admin/calendar/', admin_calendar_all, name='admin-calendar'),
     path('api/admin/calendar/by-dentist/', admin_calendar_by_dentist, name='admin-calendar-by-dentist'),

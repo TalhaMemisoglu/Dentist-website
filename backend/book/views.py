@@ -377,6 +377,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         GET /api/booking/appointments/calendar_appointments/
         GET /api/booking/appointments/appointments_by_date/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
         GET /api/booking/appointments/appointments_stats/
+        GET /api/booking/appointments/appointments_by_dentist/?dentist_id=<id>
 
         """
 
@@ -444,6 +445,69 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(appointments, many=True)
         return Response(serializer.data)
 
+    @action(detail=False) # Assistant calendar view filtered by dentist
+    def appointments_by_dentist(self, request):
+        if request.user.user_type != 'assistant':
+            return Response(
+                {"error": "Yalnızca asistanlar bu takvime erişebilir"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        dentist_id = request.query_params.get('dentist_id')
+        if not dentist_id:
+            return Response(
+                {"error": "Diş hekimi ID'si gereklidir"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            dentist = CustomUser.objects.get(id=dentist_id, user_type='dentist')
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"error": "Belirtilen diş hekimi bulunamadı"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Get appointments for the specified dentist
+        appointments = Appointment.objects.filter(
+            dentist=dentist
+        ).select_related('patient')
+        
+        calendar_data = []
+        for appointment in appointments:
+            # Calculate end time based on duration
+            start_datetime = datetime.combine(
+                appointment.appointment_date, 
+                appointment.appointment_time
+            )
+            end_datetime = start_datetime + timedelta(minutes=appointment.duration)
+
+            calendar_data.append({
+                'id': appointment.id,
+                'title': f"{appointment.patient.get_full_name()} - {appointment.treatment}",
+                'start': start_datetime.isoformat(),
+                'end': end_datetime.isoformat(),
+                'treatment': appointment.treatment,
+                'status': appointment.status,
+                'patient_id': appointment.patient.id,
+                'patient_name': appointment.patient.get_full_name(),
+                'dentist_name': dentist.get_full_name(),
+                'notes': appointment.notes,
+                'colour': {
+                    'scheduled': '#ffd700',  # gold
+                    'confirmed': '#32cd32',  # green
+                    'completed': '#4169e1',  # blue
+                    'cancelled': '#dc143c',  # red
+                    'no_show': '#808080'     # gray
+                }.get(appointment.status, '#000000')
+            })
+
+        return Response({
+            'dentist_id': dentist.id,
+            'dentist_name': dentist.get_full_name(),
+            'appointments': calendar_data
+        })
+    
     @action(detail=False) # Assistant only appointment statistics
     def appointments_stats(self, request):
         if request.user.user_type != 'assistant':
