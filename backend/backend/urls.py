@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenRefreshView,TokenVerifyView
-from book.views import DentistViewSet, AppointmentViewSet, AdminCalendarViewSet
+from book.views import DentistViewSet, AppointmentViewSet, AdminCalendarViewSet, AssistantAppointmentViewSet
 from api.views import CreateUserView, ProfileView, LoginView, LogoutView, DentistListView,CurrentUserView,CustomTokenObtainPairView,VerifyEmailView
 
 # Define views explicitly
@@ -35,6 +35,19 @@ admin_calendar_all = AdminCalendarViewSet.as_view({'get': 'all_appointments'})
 admin_calendar_by_dentist = AdminCalendarViewSet.as_view({'get': 'appointments_by_dentist'})
 admin_calendar_by_date = AdminCalendarViewSet.as_view({'get': 'appointments_by_date'})
 admin_calendar_stats = AdminCalendarViewSet.as_view({'get': 'stats'})
+
+
+assistant_appointment_list = AssistantAppointmentViewSet.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+assistant_appointment_detail = AssistantAppointmentViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy'
+})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -75,4 +88,10 @@ urlpatterns = [
     path('api/booking/appointments/dentist-calendar/', dentist_calendar, name='dentist-calendar'),
     path('api/booking/appointments/dentist-by-date/', dentist_appointments_by_date, name='dentist-appointments-by-date'),
     path('api/booking/appointments/dentist-schedule/', dentist_daily_schedule, name='dentist-daily-schedule'),
+
+    path('api/assistant/appointments/',assistant_appointment_list,name='assistant-appointment-list'),
+    path('api/assistant/appointments/<int:pk>/',assistant_appointment_detail,name='assistant-appointment-detail'),
+    path('api/assistant/appointments/<int:pk>/update/',AssistantAppointmentViewSet.as_view({'patch': 'update_appointment'}),name='assistant-appointment-update'),
+    path('api/assistant/appointments/<int:pk>/confirm/',AssistantAppointmentViewSet.as_view({'post': 'confirm_appointment'}),name='assistant-appointment-confirm'),
+    path('api/assistant/appointments/<int:pk>/cancel/',AssistantAppointmentViewSet.as_view({'post': 'cancel_appointment'}),name='assistant-appointment-cancel'),
 ]

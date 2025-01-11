@@ -743,3 +743,265 @@ class AdminCalendarViewSet(ViewSet):
                 'dentist__username'
             ).annotate(count=Count('id'))
         })
+
+'''
+PATCH  /api/booking/assistant/appointments/<pk>/update/      # Update specific appointment fields
+POST   /api/booking/assistant/appointments/<pk>/confirm/     # Confirm an appointment
+POST   /api/booking/assistant/appointments/<pk>/cancel/      # Cancel an appointment
+
+GET    /api/booking/assistant/appointments/          # List all appointments
+POST   /api/booking/assistant/appointments/          # Create new appointment
+GET    /api/booking/assistant/appointments/<pk>/     # Get single appointment
+PUT    /api/booking/assistant/appointments/<pk>/     # Full update of appointment
+PATCH  /api/booking/assistant/appointments/<pk>/     # Partial update of appointment
+DELETE /api/booking/assistant/appointments/<pk>/     # Delete appointment
+
+'''
+
+
+class AssistantAppointmentViewSet(viewsets.ModelViewSet):
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.request.user.user_type != 'assistant':
+            return Appointment.objects.none()
+        return Appointment.objects.all().select_related('patient', 'dentist')
+
+    def create(self, request, *args, **kwargs):
+        """Create appointment for a patient as an assistant"""
+        # Verify user is an assistant
+        if request.user.user_type != 'assistant':
+            return Response(
+                {"error": "Yalnızca asistanlar hasta adına randevu oluşturabilir"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Validate required fields
+        required_fields = ['patient', 'dentist', 'appointment_date', 'appointment_time', 'treatment']
+        missing_fields = [field for field in required_fields if field not in request.data]
+        if missing_fields:
+            return Response(
+                {"error": f"Eksik alanlar: {', '.join(missing_fields)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Validate patient
+            patient = CustomUser.objects.get(id=request.data['patient'])
+            if patient.user_type != 'patient':
+                return Response(
+                    {"error": "Geçersiz hasta ID'si"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validate dentist
+            dentist = CustomUser.objects.get(id=request.data['dentist'])
+            if dentist.user_type != 'dentist':
+                return Response(
+                    {"error": "Geçersiz diş hekimi ID'si"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validate date and time
+            try:
+                appointment_date = datetime.strptime(request.data['appointment_date'], '%Y-%m-%d').date()
+                appointment_time = datetime.strptime(request.data['appointment_time'], '%H:%M').time()
+                
+                # Check if date is in the past
+                if appointment_date < local_now.date():
+                    return Response(
+                        {"error": "Geçmiş tarihe randevu oluşturulamaz"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # If appointment is for today, check if time is in the past
+                if appointment_date == local_now.date() and appointment_time < local_now.time():
+                    return Response(
+                        {"error": "Geçmiş saate randevu oluşturulamaz"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except ValueError:
+                return Response(
+                    {"error": "Geçersiz tarih veya saat formatı"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Check for existing appointments at the same time
+            existing_appointment = Appointment.objects.filter(
+                dentist=dentist,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
+                status__in=['scheduled', 'confirmed']
+            ).exists()
+
+            if existing_appointment:
+                return Response(
+                    {"error": "Bu zaman diliminde başka bir randevu mevcut"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Create appointment data
+            appointment_data = {
+                'patient': patient.id,
+                'dentist': dentist.id,
+                'appointment_date': request.data['appointment_date'],
+                'appointment_time': request.data['appointment_time'],
+                'treatment': request.data['treatment'],
+                'notes': request.data.get('notes', ''),
+                'status': 'scheduled'
+            }
+
+            serializer = self.get_serializer(data=appointment_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+
+            # Get created appointment with full details
+            created_appointment = serializer.instance
+            response_data = {
+                'message': 'Randevu başarıyla oluşturuldu',
+                'appointment': {
+                    'id': created_appointment.id,
+                    'patient': {
+                        'id': patient.id,
+                        'name': patient.get_full_name()
+                    },
+                    'dentist': {
+                        'id': dentist.id,
+                        'name': dentist.get_full_name()
+                    },
+                    'appointment_date': created_appointment.appointment_date,
+                    'appointment_time': created_appointment.appointment_time,
+                    'treatment': created_appointment.treatment,
+                    'status': created_appointment.status,
+                    'notes': created_appointment.notes
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"error": "Hasta veya diş hekimi bulunamadı"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['patch'])
+    def update_appointment(self, request, pk=None):
+        """Update existing appointment details"""
+        if request.user.user_type != 'assistant':
+            return Response(
+                {"error": "Yalnızca asistanlar randevuları güncelleyebilir"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        appointment = self.get_object()
+        
+        # Prevent updating past appointments
+        if appointment.appointment_date < local_now.date():
+            return Response(
+                {"error": "Geçmiş randevular güncellenemez"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update only allowed fields
+        allowed_updates = ['appointment_date', 'appointment_time', 'treatment', 'notes', 'status']
+        update_data = {
+            key: value for key, value in request.data.items() 
+            if key in allowed_updates
+        }
+
+        # Validate new date and time if provided
+        if 'appointment_date' in update_data or 'appointment_time' in update_data:
+            new_date = datetime.strptime(
+                update_data.get('appointment_date', appointment.appointment_date.strftime('%Y-%m-%d')),
+                '%Y-%m-%d'
+            ).date()
+            new_time = datetime.strptime(
+                update_data.get('appointment_time', appointment.appointment_time.strftime('%H:%M')),
+                '%H:%M'
+            ).time()
+
+            # Check for existing appointments at the new time
+            if Appointment.objects.filter(
+                dentist=appointment.dentist,
+                appointment_date=new_date,
+                appointment_time=new_time,
+                status__in=['scheduled', 'confirmed']
+            ).exclude(id=appointment.id).exists():
+                return Response(
+                    {"error": "Bu zaman diliminde başka bir randevu mevcut"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        serializer = self.get_serializer(appointment, data=update_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            'message': 'Randevu başarıyla güncellendi',
+            'appointment': serializer.data
+        })
+
+    @action(detail=True, methods=['post'])
+    def confirm_appointment(self, request, pk=None):
+        """Confirm a scheduled appointment"""
+        if request.user.user_type != 'assistant':
+            return Response(
+                {"error": "Yalnızca asistanlar randevuları onaylayabilir"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        appointment = self.get_object()
+        
+        if appointment.status != 'scheduled':
+            return Response(
+                {"error": "Yalnızca planlanmış randevular onaylanabilir"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        appointment.status = 'confirmed'
+        appointment.save()
+
+        serializer = self.get_serializer(appointment)
+        return Response({
+            'message': 'Randevu onaylandı',
+            'appointment': serializer.data
+        })
+
+    @action(detail=True, methods=['post'])
+    def cancel_appointment(self, request, pk=None):
+        """Cancel an appointment"""
+        if request.user.user_type != 'assistant':
+            return Response(
+                {"error": "Yalnızca asistanlar randevuları iptal edebilir"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        appointment = self.get_object()
+        
+        if appointment.status not in ['scheduled', 'confirmed']:
+            return Response(
+                {"error": "Yalnızca planlanmış veya onaylanmış randevular iptal edilebilir"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if appointment.appointment_date < local_now.date():
+            return Response(
+                {"error": "Geçmiş randevular iptal edilemez"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        appointment.status = 'cancelled'
+        appointment.save()
+
+        serializer = self.get_serializer(appointment)
+        return Response({
+            'message': 'Randevu iptal edildi',
+            'appointment': serializer.data
+        })
