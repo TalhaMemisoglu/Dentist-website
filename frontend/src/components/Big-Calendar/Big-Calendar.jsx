@@ -1,15 +1,76 @@
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment-timezone';
 import './Big-Calendar.scss'
-import { Button, HStack } from '@chakra-ui/react'
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa'
+import axios from 'axios';
 
 const localizer = momentLocalizer(moment);
 
-const BigCalendar = ({ events }) => {
-    // Custom event renderer to display PatientName and treatment
+const BigCalendar = ({ events, showFilter }) => {
+    const [dentists, setDentists] = useState([]);
+    const [selectedDentist, setSelectedDentist] = useState('');
+    const [appointments, setAppointments] = useState(events || []); // Initialize with passed events
+
+    // Only fetch dentists if showFilter is true
+    useEffect(() => {
+        const fetchDentists = async () => {
+            try {
+                const response = await axios.get('/api/user/');
+                const dentistsList = response.data.filter(staff => staff.user_type === 'dentist');
+                setDentists(dentistsList);
+
+                console.log("Dentists:", dentistsList);
+                
+                // Set first dentist as default when filter is shown
+                if (dentistsList.length > 0) {
+                    setSelectedDentist(dentistsList[0].id);
+                }
+            } catch (error) {
+                console.error('Error fetching dentists:', error);
+            }
+        };
+
+        if (showFilter) {
+            fetchDentists();
+        }
+    }, [showFilter]);
+
+    // Fetch appointments when dentist is selected (only if filter is shown)
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            if (!selectedDentist || !showFilter) return;
+
+            const testDentistId = 1;
+
+            try {
+                const response = await axios.get(`/appointments/dentist/${testDentistId}`);
+                const formattedAppointments = response.data.map(apt => ({
+                    title: apt.PatientName,
+                    start: new Date(apt.start_time),
+                    end: new Date(apt.end_time),
+                    PatientName: apt.PatientName,
+                    treatment: apt.treatment
+                }));
+                setAppointments(formattedAppointments);
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+                setAppointments([]);
+            }
+        };
+
+        if (showFilter) {
+            fetchAppointments();
+        } else {
+            // If no filter (dentist view), use the events passed as props
+            setAppointments(events);
+        }
+    }, [selectedDentist, showFilter, events]);
+
+    const handleDentistChange = (event) => {
+        setSelectedDentist(event.target.value);
+    };
+
     const EventComponent = ({ event }) => (
         <div>
             <strong>{event.PatientName}</strong>
@@ -73,20 +134,6 @@ const BigCalendar = ({ events }) => {
         },
     };
 
-    // const CustomToolbar = ({ label, onNavigate }) => {
-    //     return (
-    //         <HStack justifyContent="space-between" mb={4}>
-    //             <Button onClick={() => onNavigate('PREV')} leftIcon={<FaArrowLeft />} variant="outline">
-    //                 Back
-    //             </Button>
-    //             <div>{label}</div>
-    //             <Button onClick={() => onNavigate('NEXT')} rightIcon={<FaArrowRight />} variant="outline">
-    //                 Next
-    //             </Button>
-    //         </HStack>
-    //     );
-    // };
-
     // Set the visible time range (9:00 AM to 5:00 PM)
     const minTime = new Date();
     minTime.setHours(9, 0, 0); // 9:00 AM
@@ -95,15 +142,31 @@ const BigCalendar = ({ events }) => {
     maxTime.setHours(17, 0, 0); // 5:00 PM
 
      // Ensure Monday is the first day of the week
-     const weekStartsOn = 1;
+    const weekStartsOn = 1;
 
     const allowedViews = ['week'];
 
     return (
         <div className='big-calendar-container'>
+            {showFilter && (
+                <div className='calendar-header'>
+                    <select
+                        className='dentist-select'
+                        value={selectedDentist}
+                        onChange={handleDentistChange}
+                    >
+                        <option value="">Select Dentist</option>
+                        {dentists.map((dentist) => (
+                            <option key={dentist.id} value={dentist.id}>
+                                {dentist.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
             <Calendar
                 localizer={localizer}
-                events={events}
+                events={appointments}
                 startAccessor="start"
                 endAccessor="end"
                 defaultView='week'  // week as the default view
@@ -115,7 +178,6 @@ const BigCalendar = ({ events }) => {
                 max={maxTime}
                 components={{
                     event: EventComponent,
-                    // toolbar: CustomToolbar, // not working right now
                 }}
                 firstDay={weekStartsOn}
             />

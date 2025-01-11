@@ -1,0 +1,51 @@
+.custom-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 40px 15px 20px;
+    border-radius: 4px;
+    color: white;
+    animation: slideIn 0.3s ease-in-out;
+    z-index: 1000;
+
+    &.error {
+        background-color: #ff4444;
+    }
+
+    &.info {
+        background-color: #ffa000;
+    }
+
+    &.success {
+        background-color: #00c851;
+    }
+
+    .close-button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 5px;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

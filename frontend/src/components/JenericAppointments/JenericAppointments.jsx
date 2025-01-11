@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import api from "../../api";
 import "./JenericAppointments.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import CustomAlert from '../CustomAlert/CustomAlert';
 
 const PatientAppointments = () => {
   const [activeAppointments, setActiveAppointments] = useState([]);
@@ -10,8 +11,11 @@ const PatientAppointments = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandCancel, setExpandCancel] = useState(null);
-  const [alert, setAlert] = useState(null);
+  const [alert, setAlert] = useState({ message: '', type: '' });
   const [userType, setUserType] = useState(null);
+
+  // Add a ref to store the timer
+  const shrinkTimer = useRef(null);
 
   // Add user type check at the beginning
   useEffect(() => {
@@ -30,8 +34,13 @@ const PatientAppointments = () => {
   const handleTrashClick = (id) => {
     setExpandCancel(id);
 
-    // Start countdown timer
-    setTimeout(() => {
+    // Clear any existing timer
+    if (shrinkTimer.current) {
+      clearTimeout(shrinkTimer.current);
+    }
+
+    // Start countdown timer and store the reference
+    shrinkTimer.current = setTimeout(() => {
       setExpandCancel(null); // Shrink back to trash bin if no further action
     }, 3000);
   };
@@ -39,21 +48,21 @@ const PatientAppointments = () => {
   // Function to cancel an appointment
   const cancelAppointment = async (id) => {
     try {
+      // Clear the shrink timer immediately when canceling
+      if (shrinkTimer.current) {
+        clearTimeout(shrinkTimer.current);
+      }
+      
       await api.delete(`/api/booking/appointments/${id}/cancel/`);
-      setActiveAppointments((prevActiveAppointments) =>
-        prevActiveAppointments.filter((appointment) => appointment.id !== id)
-      );
-      setPastAppointments((prevPastAppointments) =>
-        prevPastAppointments.filter((appointment) => appointment.id !== id)
-      );
       setExpandCancel(null);
-
-      setAlert("Randevu iptal edildi!");
-
-      window.location.reload();
+      setAlert({ message: "Randevu iptal edildi!", type: "success" });
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000); // alert visible for 3 seconds
     } catch (error) {
       console.error("Failed to cancel appointment:", error);
-      setAlert({ message: "Randevu iptal edilemedi. Lütfen tekrar deneyin.", type: "error"});
+      setAlert({ message: "Randevu iptal edilemedi. Lütfen tekrar deneyin.", type: "error" });
     }
   };
 
@@ -146,6 +155,11 @@ const PatientAppointments = () => {
 
   return (
     <div className="appointments-container">
+      <CustomAlert 
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ message: '', type: '' })}
+      />
       <h4 className="appointments-title">Tüm Randevuların</h4>
       <div className="appointments-content">
         {isLoading ? (

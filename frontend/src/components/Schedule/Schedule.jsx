@@ -10,8 +10,11 @@ const Schedule = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userType, setUserType] = useState(null);
+    const [dentists, setDentists] = useState([]);
+    const [selectedDentistId, setSelectedDentistId] = useState(null);
     const navigate = useNavigate();
 
+    // First fetch user type
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
@@ -26,7 +29,7 @@ const Schedule = () => {
                 const { user_type } = response.data;
                 setUserType(user_type);
                 // Eğer kullanıcı tipi admin, dentist, veya assistant değilse yönlendir
-                if (!["admin", "dentist", "assistant"].includes(user_type)) {
+                if (!["manager", "dentist", "assistant"].includes(user_type)) {
                     console.warn("Unauthorized access. Redirecting...");
                     navigate("/unauthorized");
                     return;
@@ -40,45 +43,68 @@ const Schedule = () => {
         fetchUserInfo();
     }, [navigate]);
 
+    // Then fetch dentists if user is admin or assistant
     useEffect(() => {
-        if (!userType) return; // Kullanıcı tipi yüklenmeden veri çekme
+        const fetchDentists = async () => {
+            try {
+                console.log("Fetching dentists...");  // Debug log
+                const response = await api.get('/api/user/');  // This endpoint returns all users
+                console.log("Dentists response:", response.data);  // Debug log
+                
+                if (response.data && Array.isArray(response.data)) {
+                    const dentistsList = response.data.filter(user => user.user_type === 'dentist');
+                    console.log("Filtered dentists:", dentistsList);  // Debug log
+                    setDentists(dentistsList);
+                    
+                    // Set first dentist as default
+                    if (dentistsList.length > 0) {
+                        setSelectedDentistId(dentistsList[0].id);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching dentists:', error);
+                setError("Failed to load dentists.");
+            }
+        };
+
+        if (userType === 'admin' || userType === 'assistant') {
+            fetchDentists();
+        }
+    }, [userType]);
+
+    // Fetch events based on selected dentist or user type
+    useEffect(() => {
+        if (!userType) return;
 
         const fetchEvents = async () => {
             try {
                 setIsLoading(true);
                 let apiUrl;
 
-                // Kullanıcı tipine göre API endpoint seçimi
                 switch (userType) {
                     case "admin":
-                        apiUrl = "/api/admin-calendar/all_appointments/";
+                    case "assistant":
+                        if (!selectedDentistId) return;
+                        apiUrl = `/api/booking/appointments/appointments_by_dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "dentist":
                         apiUrl = "/api/booking/appointments/dentist-calendar";
                         break;
-                    case "assistant":
-                        apiUrl = "/api/assistant-calendar/schedule/";
-                        break;
                     default:
-                        console.error("Invalid user type");
                         return;
                 }
 
+                console.log("Fetching events from:", apiUrl);  // Debug log
                 const response = await api.get(apiUrl);
-                console.log(response.data);
-                // API'den dönen veriyi Big Calendar formatına çevir
-                const fetchedEvents = response.data.map((event) => {
-                    return {
-                        title: `${event.patient_name} - ${event.treatment}`,
-                        PatientName: event.patient_name,
-                        treatment: event.treatment,
-                        start: new Date(event.start),
-                        end: new Date(event.end),
-                        status: event.status
-                    };
-                });
+                const fetchedEvents = response.data.map((event) => ({
+                    title: `${event.patient_name} - ${event.treatment}`,
+                    PatientName: event.patient_name,
+                    treatment: event.treatment,
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    status: event.status
+                }));
 
-                console.log("fetchedEvents: ", fetchedEvents);
                 setEvents(fetchedEvents);
             } catch (error) {
                 console.error("Error fetching events:", error);
@@ -89,17 +115,38 @@ const Schedule = () => {
         };
 
         fetchEvents();
-    }, [userType]);
+    }, [userType, selectedDentistId]);
 
     if (isLoading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
+    const showFilter = userType === 'manager' || userType === 'assistant';
+
     return (
         <div>
-          <h1>Takvim</h1>
-          <BigCalendar events={events} />
+            <h1>Takvim</h1>
+            {showFilter && dentists.length > 0 && (
+                <div className="dentist-filter">
+                    <select
+                        value={selectedDentistId || ''}
+                        onChange={(e) => setSelectedDentistId(e.target.value)}
+                        className="dentist-select"
+                    >
+                        {dentists.map((dentist) => (
+                            <option key={dentist.id} value={dentist.id}>
+                                {dentist.first_name} {dentist.last_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+            <BigCalendar 
+                events={events} 
+                showFilter={showFilter}
+            />
         </div>
-      );
+    );
 };
+
 export default Schedule;
 
