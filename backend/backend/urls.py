@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenRefreshView,TokenVerifyView
 from book.views import DentistViewSet, AppointmentViewSet, AdminCalendarViewSet, AssistantAppointmentViewSet
-from api.views import CreateUserView, ProfileView, LoginView, LogoutView, DentistListView,CurrentUserView,CustomTokenObtainPairView,VerifyEmailView
+from api.views import  DentistListView,CustomTokenObtainPairView
 
 # Define views explicitly
 dentist_list = DentistViewSet.as_view({'get': 'list'})
@@ -77,6 +77,7 @@ urlpatterns = [
     path('api/booking/appointments/by-date/', appointments_by_date, name='appointments-by-date'),
     path('api/booking/appointments/stats/', appointments_stats, name='appointments-stats'),
     path('api/booking/appointments/by-dentist/', calendar_by_dentist, name='calendar_by_dentist'),
+    
 
     # Admin calendar 
     path('api/admin/calendar/', admin_calendar_all, name='admin-calendar'),
@@ -88,6 +89,7 @@ urlpatterns = [
     path('api/booking/appointments/dentist-calendar/', dentist_calendar, name='dentist-calendar'),
     path('api/booking/appointments/dentist-by-date/', dentist_appointments_by_date, name='dentist-appointments-by-date'),
     path('api/booking/appointments/dentist-schedule/', dentist_daily_schedule, name='dentist-daily-schedule'),
+    
 
     path('api/assistant/appointments/',assistant_appointment_list,name='assistant-appointment-list'),
     path('api/assistant/appointments/<int:pk>/',assistant_appointment_detail,name='assistant-appointment-detail'),

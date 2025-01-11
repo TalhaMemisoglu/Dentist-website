@@ -48,17 +48,17 @@ const Schedule = () => {
         const fetchDentists = async () => {
             try {
                 console.log("Fetching dentists...");  // Debug log
-                const response = await api.get('/api/user/');  // This endpoint returns all users
+                const response = await api.get('/api/dentists/');  // This endpoint returns all dentists
                 console.log("Dentists response:", response.data);  // Debug log
                 
                 if (response.data && Array.isArray(response.data)) {
-                    const dentistsList = response.data.filter(user => user.user_type === 'dentist');
-                    console.log("Filtered dentists:", dentistsList);  // Debug log
-                    setDentists(dentistsList);
+                    // You don't need to filter, as the backend is already filtering for 'dentist' user_type
+                    console.log("Dentists:", response.data);  // Debug log
+                    setDentists(response.data);
                     
                     // Set first dentist as default
-                    if (dentistsList.length > 0) {
-                        setSelectedDentistId(dentistsList[0].id);
+                    if (response.data.length > 0) {
+                        setSelectedDentistId(response.data[0].id);
                     }
                 }
             } catch (error) {
@@ -66,12 +66,12 @@ const Schedule = () => {
                 setError("Failed to load dentists.");
             }
         };
-
+    
         if (userType === 'admin' || userType === 'assistant') {
             fetchDentists();
         }
     }, [userType]);
-
+    
     // Fetch events based on selected dentist or user type
     useEffect(() => {
         if (!userType) return;
@@ -80,12 +80,15 @@ const Schedule = () => {
             try {
                 setIsLoading(true);
                 let apiUrl;
-
+        
                 switch (userType) {
                     case "admin":
+                        if (!selectedDentistId) return;
+                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
+                        break;
                     case "assistant":
                         if (!selectedDentistId) return;
-                        apiUrl = `/api/booking/appointments/appointments_by_dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "dentist":
                         apiUrl = "/api/booking/appointments/dentist-calendar";
@@ -93,19 +96,26 @@ const Schedule = () => {
                     default:
                         return;
                 }
-
+        
                 console.log("Fetching events from:", apiUrl);  // Debug log
                 const response = await api.get(apiUrl);
-                const fetchedEvents = response.data.map((event) => ({
-                    title: `${event.patient_name} - ${event.treatment}`,
-                    PatientName: event.patient_name,
-                    treatment: event.treatment,
-                    start: new Date(event.start),
-                    end: new Date(event.end),
-                    status: event.status
-                }));
-
-                setEvents(fetchedEvents);
+                console.log("API Response:", response.data);  // Debug log
+        
+                // Ensure response contains appointments key
+                if (response.data && Array.isArray(response.data.appointments)) {
+                    const fetchedEvents = response.data.appointments.map((event) => ({
+                        title: `${event.patient_name} - ${event.treatment}`,
+                        PatientName: event.patient_name,
+                        treatment: event.treatment,
+                        start: new Date(event.start),
+                        end: new Date(event.end),
+                        status: event.status
+                    }));
+                    setEvents(fetchedEvents);
+                } else {
+                    console.error('Appointments data is not an array:', response.data);
+                    setError("Unexpected response format.");
+                }
             } catch (error) {
                 console.error("Error fetching events:", error);
                 setError("Failed to load events.");

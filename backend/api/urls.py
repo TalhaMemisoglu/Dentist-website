@@ -16,10 +16,7 @@ urlpatterns = [
     path('verify-email/<int:user_id>/', VerifyEmailView.as_view(), name='verify-email'),
     path('password-reset-request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('password-reset/<str:uid>/<str:token>/', PasswordResetView.as_view(), name='password_reset'),
-
-    path('admin/staff/', StaffManagementView.as_view(), name='staff-list'),
-    path('admin/staff/<int:user_id>/', StaffDetailView.as_view(), name='staff-detail'),
-    
     path('staff/list/', StaffListView.as_view(), name='staff-list'),
-
+    path('admin/staff/', StaffManagementView.as_view(), name='admin-list'),
+    path('admin/staff/<int:user_id>/', StaffDetailView.as_view(), name='staff-detail'),
 ]

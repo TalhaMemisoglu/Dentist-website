@@ -4,6 +4,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment-timezone';
 import './Big-Calendar.scss'
 import axios from 'axios';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 
 const localizer = momentLocalizer(moment);
 
@@ -11,61 +12,87 @@ const BigCalendar = ({ events, showFilter }) => {
     const [dentists, setDentists] = useState([]);
     const [selectedDentist, setSelectedDentist] = useState('');
     const [appointments, setAppointments] = useState(events || []); // Initialize with passed events
+    
+   // Retrieve token once to avoid redundant calls
+   const token = localStorage.getItem(ACCESS_TOKEN);
 
-    // Only fetch dentists if showFilter is true
-    useEffect(() => {
-        const fetchDentists = async () => {
-            try {
-                const response = await axios.get('/api/user/');
-                const dentistsList = response.data.filter(staff => staff.user_type === 'dentist');
-                setDentists(dentistsList);
+   // Fetch dentists
+   useEffect(() => {
+       const fetchDentists = async () => {
+           if (!token) {
+               console.error('Authentication token is missing.');
+               return;
+           }
 
-                console.log("Dentists:", dentistsList);
-                
-                // Set first dentist as default when filter is shown
-                if (dentistsList.length > 0) {
-                    setSelectedDentist(dentistsList[0].id);
+           try {
+               const response = await axios.get('/api/dentists/', {
+                   headers: { Authorization: `Bearer ${token}` },
+               });
+               const dentistsList = response.data; // Backend now returns only dentists
+               setDentists(dentistsList);
+
+               console.log("Dentists:", dentistsList);
+
+               // Set first dentist as default when filter is shown
+               if (dentistsList.length > 0) {
+                   setSelectedDentist(dentistsList[0].id);
+               }
+           } catch (error) {
+               console.error('Error fetching dentists:', error);
+           }
+       };
+
+       if (showFilter) {
+           fetchDentists();
+       }
+   }, [showFilter, token]);
+
+   // Fetch appointments when dentist is selected
+   useEffect(() => {
+       const fetchAppointments = async () => {
+           if (!selectedDentist || !showFilter) return;
+
+           if (!token) {
+               console.error('Authentication token is missing.');
+               return;
+           }
+
+           try {
+                let apiUrl;
+            
+                switch (userType) {
+                    case "admin":
+                        if (!selectedDentistId) return;
+                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
+                        break;
+                    case "assistant":
+                        if (!selectedDentistId) return;
+                        apiUrl = `api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
+                        break;
                 }
-            } catch (error) {
-                console.error('Error fetching dentists:', error);
-            }
-        };
-
-        if (showFilter) {
-            fetchDentists();
-        }
-    }, [showFilter]);
-
-    // Fetch appointments when dentist is selected (only if filter is shown)
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            if (!selectedDentist || !showFilter) return;
-
-            const testDentistId = 1;
-
-            try {
-                const response = await axios.get(`/appointments/dentist/${testDentistId}`);
+                const response = await axios.get(apiUrl, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 const formattedAppointments = response.data.map(apt => ({
                     title: apt.PatientName,
                     start: new Date(apt.start_time),
                     end: new Date(apt.end_time),
                     PatientName: apt.PatientName,
-                    treatment: apt.treatment
+                    treatment: apt.treatment,
                 }));
                 setAppointments(formattedAppointments);
             } catch (error) {
                 console.error('Error fetching appointments:', error);
                 setAppointments([]);
             }
-        };
+       };
 
-        if (showFilter) {
-            fetchAppointments();
-        } else {
-            // If no filter (dentist view), use the events passed as props
-            setAppointments(events);
-        }
-    }, [selectedDentist, showFilter, events]);
+       if (showFilter) {
+           fetchAppointments();
+       } else {
+           setAppointments(events); // Use passed events if no filter is shown
+       }
+   }, [selectedDentist, showFilter, events, token]);
 
     const handleDentistChange = (event) => {
         setSelectedDentist(event.target.value);
@@ -148,7 +175,7 @@ const BigCalendar = ({ events, showFilter }) => {
 
     return (
         <div className='big-calendar-container'>
-            {showFilter && (
+            {showFilter && dentists.length > 0 &&  (
                 <div className='calendar-header'>
                     <select
                         className='dentist-select'
@@ -157,9 +184,9 @@ const BigCalendar = ({ events, showFilter }) => {
                     >
                         <option value="">Select Dentist</option>
                         {dentists.map((dentist) => (
-                            <option key={dentist.id} value={dentist.id}>
-                                {dentist.name}
-                            </option>
+                        <option key={dentist.id} value={dentist.id}>
+                            {dentist.first_name} {dentist.last_name}
+                        </option>
                         ))}
                     </select>
                 </div>
@@ -186,3 +213,6 @@ const BigCalendar = ({ events, showFilter }) => {
 };
 
 export default BigCalendar;
+
+
+

@@ -12,8 +12,8 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator  # For genera
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode  # Encoding/decoding user IDs for URLs
 from django.utils.encoding import force_bytes, force_str  # Converting between bytes and string representations
 from .models import CustomUser, Profile
-from .serializers import CustomUserSerializer, ProfileSerializer, LoginSerializer, UserSerializer, UserProfileUpdateSerializer, PasswordUpdateSerializer
-from rest_framework.generics import UpdateAPIView
+from .serializers import CustomUserSerializer,DentistListSerializer, ProfileSerializer, LoginSerializer, UserSerializer, UserProfileUpdateSerializer, PasswordUpdateSerializer
+from rest_framework.generics import UpdateAPIView, ListAPIView
 from rest_framework.views import APIView
 import logging
 
@@ -144,13 +144,12 @@ class ProfileView(generics.GenericAPIView):
             return Response({"error": "Profil bulunamadı."}, status=404)
 
 # Dentist List View
-class DentistListView(generics.GenericAPIView):
+class DentistListView(ListAPIView):
+    serializer_class = DentistListSerializer
     permission_classes = [AllowAny]
 
-    def get(self, request):
-        dentists = CustomUser.objects.filter(user_type='dentist')
-        serializer = CustomUserSerializer(dentists, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return CustomUser.objects.filter(user_type='dentist')
 
 # Current User View
 class CurrentUserView(generics.GenericAPIView):
@@ -297,7 +296,7 @@ class UpdatePasswordView(APIView):
 
 
 class StaffListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] #CHANGE
     
     def get(self, request):
         staff = CustomUser.objects.filter(
