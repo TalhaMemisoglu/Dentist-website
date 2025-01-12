@@ -28,7 +28,9 @@ const Schedule = () => {
                 const response = await api.get("/api/user/");
                 const { user_type } = response.data;
                 setUserType(user_type);
-                // Eğer kullanıcı tipi admin, dentist, veya assistant değilse yönlendir
+
+                console.log("User in Fetch:", userType);
+
                 if (!["manager", "dentist", "assistant"].includes(user_type)) {
                     console.warn("Unauthorized access. Redirecting...");
                     navigate("/unauthorized");
@@ -74,16 +76,20 @@ const Schedule = () => {
     
     // Fetch events based on selected dentist or user type
     useEffect(() => {
+        console.log("User Type:", userType);
+        console.log("Selected Dentist ID:", selectedDentistId);
+
         if (!userType || !selectedDentistId) return;
 
         const fetchEvents = async () => {
             try {
+                console.log("Fetching events...");
                 setIsLoading(true);
                 let apiUrl;
 
                 switch (userType) {
                     case "manager":
-                        apiUrl = `/api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `/api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "assistant":
                         apiUrl = `/api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
@@ -99,9 +105,8 @@ const Schedule = () => {
                 const response = await api.get(apiUrl);
                 console.log("API Response:", response.data);  // Debug log
         
-                // Ensure response contains appointments key
-                if (response.data && Array.isArray(response.data)) {  // Remove .appointments check
-                    const fetchedEvents = response.data.map((event) => ({
+                if (response.data && response.data.appointments) {
+                    const fetchedEvents = response.data.appointments.map((event) => ({
                         title: `${event.patient_name} - ${event.treatment}`,
                         PatientName: event.patient_name,
                         treatment: event.treatment,
@@ -111,6 +116,7 @@ const Schedule = () => {
                     }));
                     setEvents(fetchedEvents);
                 } else {
+                    console.error("Unexpected response format:", response.data);
                     setError("Unexpected response format.");
                 }
             } catch (error) {
@@ -148,7 +154,6 @@ const Schedule = () => {
             )}
             <BigCalendar 
                 events={events} 
-                showFilter={showFilter}
                 userType={userType}
                 selectedDentistId={selectedDentistId}
             />

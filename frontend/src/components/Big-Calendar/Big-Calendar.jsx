@@ -8,7 +8,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 
 const localizer = momentLocalizer(moment);
 
-const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
+const BigCalendar = ({ events, userType, selectedDentistId }) => {
     const [dentists, setDentists] = useState([]);
     const [selectedDentist, setSelectedDentist] = useState('');
     const [appointments, setAppointments] = useState(events || []); // Initialize with passed events
@@ -41,15 +41,12 @@ const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
             }
         };
 
-        if (showFilter) {
-            fetchDentists();
-        }
-    }, [showFilter, token]);
+    }, [token]);
 
     // Fetch appointments when dentist is selected
     useEffect(() => {
         const fetchAppointments = async () => {
-            if (!selectedDentistId || !showFilter) return;
+            if (!selectedDentistId) return;
     
             if (!token) {
                 console.error('Authentication token is missing.');
@@ -83,25 +80,13 @@ const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
                     },
                 });
     
-                console.log("Response status:", response.status);
-                console.log("Response data:", response.data);
-    
-                const appointmentsData = response.data.appointments || [];
-                
-                const formattedAppointments = appointmentsData.map(apt => ({
-                    id: apt.id,
-                    title: apt.title,
-                    start: new Date(apt.start),
-                    end: new Date(apt.end),
-                    PatientName: apt.patient_name,
-                    treatment: apt.treatment,
-                    status: apt.status,
-                    color: apt.colour,
-                    notes: apt.notes
-                }));
-    
-                console.log("Formatted appointments:", formattedAppointments);
-                setAppointments(formattedAppointments);
+                // Directly set appointments from response data
+                if (response.data) {
+                    setAppointments(response.data);
+                } else {
+                    console.error('Unexpected response format:', response.data);
+                    setAppointments([]);
+                }
             } catch (error) {
                 console.error('Error details:', {
                     message: error.message,
@@ -118,12 +103,8 @@ const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
             }
         };
     
-        if (showFilter) {
-            fetchAppointments();
-        } else {
-            setAppointments(events);
-        }
-    }, [selectedDentistId, showFilter, events, token, userType]);
+        setAppointments(events);
+    }, [selectedDentistId, events, token, userType]);
 
     const handleDentistChange = (event) => {
         setSelectedDentist(event.target.value);
@@ -170,7 +151,6 @@ const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
     });
 
     // Custom formats for 24-hour time and custom day names
-    // Custom formats
     const formats = {
         timeGutterFormat: (date, culture, localizer) =>
             localizer.format(date, 'HH:mm', culture),
