@@ -67,27 +67,25 @@ const Schedule = () => {
             }
         };
     
-        if (userType === 'admin' || userType === 'assistant') {
+        if (userType === 'manager' || userType === 'assistant') {
             fetchDentists();
         }
     }, [userType]);
     
     // Fetch events based on selected dentist or user type
     useEffect(() => {
-        if (!userType) return;
+        if (!userType || !selectedDentistId) return;
 
         const fetchEvents = async () => {
             try {
                 setIsLoading(true);
                 let apiUrl;
-        
+
                 switch (userType) {
-                    case "admin":
-                        if (!selectedDentistId) return;
+                    case "manager":
                         apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "assistant":
-                        if (!selectedDentistId) return;
                         apiUrl = `api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "dentist":
@@ -113,11 +111,9 @@ const Schedule = () => {
                     }));
                     setEvents(fetchedEvents);
                 } else {
-                    console.error('Appointments data is not an array:', response.data);
                     setError("Unexpected response format.");
                 }
             } catch (error) {
-                console.error("Error fetching events:", error);
                 setError("Failed to load events.");
             } finally {
                 setIsLoading(false);
@@ -153,6 +149,8 @@ const Schedule = () => {
             <BigCalendar 
                 events={events} 
                 showFilter={showFilter}
+                userType={userType}
+                selectedDentistId={selectedDentistId}
             />
         </div>
     );

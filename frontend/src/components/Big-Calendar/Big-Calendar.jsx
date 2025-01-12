@@ -8,68 +8,66 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 
 const localizer = momentLocalizer(moment);
 
-const BigCalendar = ({ events, showFilter }) => {
+const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
     const [dentists, setDentists] = useState([]);
     const [selectedDentist, setSelectedDentist] = useState('');
     const [appointments, setAppointments] = useState(events || []); // Initialize with passed events
-    
-   // Retrieve token once to avoid redundant calls
-   const token = localStorage.getItem(ACCESS_TOKEN);
 
-   // Fetch dentists
-   useEffect(() => {
-       const fetchDentists = async () => {
-           if (!token) {
-               console.error('Authentication token is missing.');
-               return;
-           }
+    // Retrieve token once to avoid redundant calls
+    const token = localStorage.getItem(ACCESS_TOKEN);
 
-           try {
-               const response = await axios.get('/api/dentists/', {
-                   headers: { Authorization: `Bearer ${token}` },
-               });
-               const dentistsList = response.data; // Backend now returns only dentists
-               setDentists(dentistsList);
+    // Fetch dentists
+    useEffect(() => {
+        const fetchDentists = async () => {
+            if (!token) {
+                console.error('Authentication token is missing.');
+                return;
+            }
 
-               console.log("Dentists:", dentistsList);
 
-               // Set first dentist as default when filter is shown
-               if (dentistsList.length > 0) {
-                   setSelectedDentist(dentistsList[0].id);
-               }
-           } catch (error) {
-               console.error('Error fetching dentists:', error);
-           }
-       };
+            try {
+                const response = await axios.get('/api/dentists/', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const dentistsList = response.data; // Backend now returns only dentists
+                setDentists(dentistsList);
 
-       if (showFilter) {
-           fetchDentists();
-       }
-   }, [showFilter, token]);
+                // Set first dentist as default when filter is shown
+                if (dentistsList.length > 0) {
+                    setSelectedDentist(dentistsList[0].id);
+                }
+            } catch (error) {
+                console.error('Error fetching dentists:', error);
+            }
+        };
 
-   // Fetch appointments when dentist is selected
-   useEffect(() => {
-       const fetchAppointments = async () => {
-           if (!selectedDentist || !showFilter) return;
+        if (showFilter) {
+            fetchDentists();
+        }
+    }, [showFilter, token]);
 
-           if (!token) {
-               console.error('Authentication token is missing.');
-               return;
-           }
+    // Fetch appointments when dentist is selected
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            if (!selectedDentistId || !showFilter) return;
 
-           try {
+            if (!token) {
+                console.error('Authentication token is missing.');
+                return;
+            }
+
+            try {
                 let apiUrl;
-            
+
                 switch (userType) {
-                    case "admin":
-                        if (!selectedDentistId) return;
+                    case "manager":
                         apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "assistant":
-                        if (!selectedDentistId) return;
-                        apiUrl = `api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                 }
+                console.log("API URL:", apiUrl);
                 const response = await axios.get(apiUrl, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -85,14 +83,14 @@ const BigCalendar = ({ events, showFilter }) => {
                 console.error('Error fetching appointments:', error);
                 setAppointments([]);
             }
-       };
+        };
 
-       if (showFilter) {
-           fetchAppointments();
-       } else {
-           setAppointments(events); // Use passed events if no filter is shown
-       }
-   }, [selectedDentist, showFilter, events, token]);
+        if (showFilter) {
+            fetchAppointments();
+        } else {
+            setAppointments(events); // Use passed events if no filter is shown
+        }
+    }, [selectedDentistId, showFilter, events, token, userType]);
 
     const handleDentistChange = (event) => {
         setSelectedDentist(event.target.value);
@@ -151,13 +149,13 @@ const BigCalendar = ({ events, showFilter }) => {
         },
         monthHeaderFormat: (date) => customMonthNames[moment(date).month()],
         dayRangeHeaderFormat: ({ start, end }, culture, localizer) => {
-            const startDay   = moment(start).date();
-            const endDay     = moment(start).add(4, 'days').date(); // add 4 days for 5 days week
+            const startDay = moment(start).date();
+            const endDay = moment(start).add(4, 'days').date(); // add 4 days for 5 days week
             const startMonth = customMonthNames[moment(start).month()];
-            const endMonth   = customMonthNames[moment(start).add(4, 'days').month()];
+            const endMonth = customMonthNames[moment(start).add(4, 'days').month()];
             return startMonth === endMonth
-            ? `${startMonth} - ${startDay} - ${endDay}`
-            : `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+                ? `${startMonth} - ${startDay} - ${endDay}`
+                : `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
         },
     };
 
@@ -168,29 +166,13 @@ const BigCalendar = ({ events, showFilter }) => {
     const maxTime = new Date();
     maxTime.setHours(17, 0, 0); // 5:00 PM
 
-     // Ensure Monday is the first day of the week
+    // Ensure Monday is the first day of the week
     const weekStartsOn = 1;
 
     const allowedViews = ['week'];
 
     return (
         <div className='big-calendar-container'>
-            {showFilter && dentists.length > 0 &&  (
-                <div className='calendar-header'>
-                    <select
-                        className='dentist-select'
-                        value={selectedDentist}
-                        onChange={handleDentistChange}
-                    >
-                        <option value="">Select Dentist</option>
-                        {dentists.map((dentist) => (
-                        <option key={dentist.id} value={dentist.id}>
-                            {dentist.first_name} {dentist.last_name}
-                        </option>
-                        ))}
-                    </select>
-                </div>
-            )}
             <Calendar
                 localizer={localizer}
                 events={appointments}
@@ -213,6 +195,3 @@ const BigCalendar = ({ events, showFilter }) => {
 };
 
 export default BigCalendar;
-
-
-
