@@ -50,45 +50,78 @@ const BigCalendar = ({ events, showFilter, userType, selectedDentistId }) => {
     useEffect(() => {
         const fetchAppointments = async () => {
             if (!selectedDentistId || !showFilter) return;
-
+    
             if (!token) {
                 console.error('Authentication token is missing.');
                 return;
             }
-
+    
             try {
                 let apiUrl;
-
+    
                 switch (userType) {
                     case "manager":
-                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `/api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "assistant":
-                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `/api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
+                    default:
+                        console.error('Invalid user type:', userType);
+                        return;
                 }
-                console.log("API URL:", apiUrl);
+    
+                console.log("Making request to:", apiUrl);
+                console.log("With token:", token ? "Present" : "Missing");
+                console.log("User type:", userType);
+                console.log("Selected dentist ID:", selectedDentistId);
+    
                 const response = await axios.get(apiUrl, {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
                 });
-                const formattedAppointments = response.data.map(apt => ({
-                    title: apt.PatientName,
-                    start: new Date(apt.start_time),
-                    end: new Date(apt.end_time),
-                    PatientName: apt.PatientName,
+    
+                console.log("Response status:", response.status);
+                console.log("Response data:", response.data);
+    
+                const appointmentsData = response.data.appointments || [];
+                
+                const formattedAppointments = appointmentsData.map(apt => ({
+                    id: apt.id,
+                    title: apt.title,
+                    start: new Date(apt.start),
+                    end: new Date(apt.end),
+                    PatientName: apt.patient_name,
                     treatment: apt.treatment,
+                    status: apt.status,
+                    color: apt.colour,
+                    notes: apt.notes
                 }));
+    
+                console.log("Formatted appointments:", formattedAppointments);
                 setAppointments(formattedAppointments);
             } catch (error) {
-                console.error('Error fetching appointments:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    status: error.response?.status,
+                    statusText: error.response?.statusText,
+                    data: error.response?.data,
+                    config: {
+                        url: error.config?.url,
+                        method: error.config?.method,
+                        headers: error.config?.headers
+                    }
+                });
                 setAppointments([]);
             }
         };
-
+    
         if (showFilter) {
             fetchAppointments();
         } else {
-            setAppointments(events); // Use passed events if no filter is shown
+            setAppointments(events);
         }
     }, [selectedDentistId, showFilter, events, token, userType]);
 

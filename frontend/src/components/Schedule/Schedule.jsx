@@ -83,13 +83,13 @@ const Schedule = () => {
 
                 switch (userType) {
                     case "manager":
-                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `/api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "assistant":
-                        apiUrl = `api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `/api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "dentist":
-                        apiUrl = "/api/booking/appointments/dentist-calendar";
+                        apiUrl = "/api/booking/appointments/dentist-calendar/";
                         break;
                     default:
                         return;
@@ -100,8 +100,8 @@ const Schedule = () => {
                 console.log("API Response:", response.data);  // Debug log
         
                 // Ensure response contains appointments key
-                if (response.data && Array.isArray(response.data.appointments)) {
-                    const fetchedEvents = response.data.appointments.map((event) => ({
+                if (response.data && Array.isArray(response.data)) {  // Remove .appointments check
+                    const fetchedEvents = response.data.map((event) => ({
                         title: `${event.patient_name} - ${event.treatment}`,
                         PatientName: event.patient_name,
                         treatment: event.treatment,

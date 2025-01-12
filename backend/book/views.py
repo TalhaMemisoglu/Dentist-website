@@ -11,6 +11,8 @@ from api.models import CustomUser
 from django.db.models import Q, Count
 from rest_framework.viewsets import ViewSet
 from django.db.models.functions import Now
+from rest_framework.decorators import api_view #Can change these
+
 
 from pytz import timezone as pytz_timezone
 local_timezone = pytz_timezone("Europe/Istanbul")  # Replace with desired time zone
@@ -446,67 +448,72 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False) # Assistant calendar view filtered by dentist
-    def appointments_by_dentist(self, request):
-        if request.user.user_type != 'assistant':
-            return Response(
-                {"error": "Yalnızca asistanlar bu takvime erişebilir"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        dentist_id = request.query_params.get('dentist_id')
-        if not dentist_id:
-            return Response(
-                {"error": "Diş hekimi ID'si gereklidir"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+    def appointments_by_dentist(self,request):
         try:
-            dentist = CustomUser.objects.get(id=dentist_id, user_type='dentist')
-        except CustomUser.DoesNotExist:
-            return Response(
-                {"error": "Belirtilen diş hekimi bulunamadı"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            if request.user.user_type != 'assistant':
+                return Response(
+                    {"error": "Yalnızca asistanlar bu takvime erişebilir"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
-        # Get appointments for the specified dentist
-        appointments = Appointment.objects.filter(
-            dentist=dentist
-        ).select_related('patient')
-        
-        calendar_data = []
-        for appointment in appointments:
-            # Calculate end time based on duration
-            start_datetime = datetime.combine(
-                appointment.appointment_date, 
-                appointment.appointment_time
-            )
-            end_datetime = start_datetime + timedelta(minutes=appointment.duration)
+            dentist_id = request.query_params.get('dentist_id')
+            if not dentist_id:
+                return Response(
+                    {"error": "Diş hekimi ID'si gereklidir"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            calendar_data.append({
-                'id': appointment.id,
-                'title': f"{appointment.patient.get_full_name()} - {appointment.treatment}",
-                'start': start_datetime.isoformat(),
-                'end': end_datetime.isoformat(),
-                'treatment': appointment.treatment,
-                'status': appointment.status,
-                'patient_id': appointment.patient.id,
-                'patient_name': appointment.patient.get_full_name(),
+            try:
+                dentist = CustomUser.objects.get(id=dentist_id, user_type='dentist')
+            except CustomUser.DoesNotExist:
+                return Response(
+                    {"error": "Belirtilen diş hekimi bulunamadı"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            appointments = Appointment.objects.filter(
+                dentist=dentist
+            ).select_related('patient')
+            
+            calendar_data = []
+            for appointment in appointments:
+                start_datetime = datetime.combine(
+                    appointment.appointment_date, 
+                    appointment.appointment_time
+                )
+                end_datetime = start_datetime + timedelta(minutes=appointment.duration)
+
+                calendar_data.append({
+                    'id': appointment.id,
+                    'title': f"{appointment.patient.get_full_name()} - {appointment.treatment}",
+                    'start': start_datetime.isoformat(),
+                    'end': end_datetime.isoformat(),
+                    'treatment': appointment.treatment,
+                    'status': appointment.status,
+                    'patient_id': appointment.patient.id,
+                    'patient_name': appointment.patient.get_full_name(),
+                    'dentist_name': dentist.get_full_name(),
+                    'notes': appointment.notes,
+                    'colour': {
+                        'scheduled': '#ffd700',
+                        'confirmed': '#32cd32',
+                        'completed': '#4169e1',
+                        'cancelled': '#dc143c',
+                        'no_show': '#808080'
+                    }.get(appointment.status, '#000000')
+                })
+
+            return Response({
+                'dentist_id': dentist.id,
                 'dentist_name': dentist.get_full_name(),
-                'notes': appointment.notes,
-                'colour': {
-                    'scheduled': '#ffd700',  # gold
-                    'confirmed': '#32cd32',  # green
-                    'completed': '#4169e1',  # blue
-                    'cancelled': '#dc143c',  # red
-                    'no_show': '#808080'     # gray
-                }.get(appointment.status, '#000000')
+                'appointments': calendar_data
             })
-
-        return Response({
-            'dentist_id': dentist.id,
-            'dentist_name': dentist.get_full_name(),
-            'appointments': calendar_data
-        })
+        except Exception as e:
+            print(f"Error in appointments_by_dentist: {str(e)}")
+            return Response(
+                {"error": "Internal server error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     @action(detail=False) # Assistant only appointment statistics
     def appointments_stats(self, request):
@@ -683,7 +690,7 @@ class AdminCalendarViewSet(ViewSet):
     @action(detail=False, methods=['get'])
     def all_appointments(self, request):
         appointments = Appointment.objects.all().select_related('patient', 'dentist')
-        serializer = CalendarAppointmentSerializer(appointments, many=True)
+        serializer = AdminCalendarAppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -699,7 +706,7 @@ class AdminCalendarViewSet(ViewSet):
             dentist_id=dentist_id
         ).select_related('patient', 'dentist')
         
-        serializer = CalendarAppointmentSerializer(appointments, many=True)
+        serializer = AdminCalendarAppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -720,7 +727,7 @@ class AdminCalendarViewSet(ViewSet):
             appointment_date__range=[start_date, end_date]
         ).select_related('patient', 'dentist')
 
-        serializer = CalendarAppointmentSerializer(appointments, many=True)
+        serializer = AdminCalendarAppointmentSerializer(appointments, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
