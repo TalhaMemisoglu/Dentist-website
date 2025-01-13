@@ -24,7 +24,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         print("\n=== Serializer validate method ===")
-        print(f"Incoming data: {data}")
         
         try:
             appointment = Appointment(**data)
@@ -51,7 +50,7 @@ class AdminCalendarAppointmentSerializer(serializers.ModelSerializer):
                  'patient_name', 'dentist_name', 'status', 'notes','treatment']
 
     def get_title(self, obj):
-        return f"{obj.patient.get_full_name()} - Dt. {obj.dentist.get_full_name()} {obj.appointment.treatment}"
+        return f"{obj.patient.get_full_name()} - Dt. {obj.dentist.get_full_name()} {obj.treatment}"
 
     def get_start(self, obj):
         return datetime.combine(obj.appointment_date, obj.appointment_time).isoformat()

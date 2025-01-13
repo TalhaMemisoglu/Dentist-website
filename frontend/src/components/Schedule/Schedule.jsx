@@ -89,7 +89,7 @@ const Schedule = () => {
 
                 switch (userType) {
                     case "manager":
-                        apiUrl = `/api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;
+                        apiUrl = `api/admin/calendar/by-dentist/?dentist_id=${selectedDentistId}`;
                         break;
                     case "assistant":
                         apiUrl = `/api/booking/appointments/by-dentist/?dentist_id=${selectedDentistId}`;

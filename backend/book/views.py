@@ -685,7 +685,20 @@ GET /api/admin-calendar/stats/
 
 
 class AdminCalendarViewSet(ViewSet):
-    permission_classes = [IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]  
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    
+    def check_user_type(self, request):
+        # Check if user is manager
+        if request.user.user_type not in ['manager']:
+            return Response(
+                {"error": "Sadece Yöneticiler erişebilir!"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return None
 
     @action(detail=False, methods=['get'])
     def all_appointments(self, request):
@@ -695,19 +708,43 @@ class AdminCalendarViewSet(ViewSet):
 
     @action(detail=False, methods=['get'])
     def appointments_by_dentist(self, request):
-        dentist_id = request.query_params.get('dentist_id')
-        if not dentist_id:
-            return Response(
-                {"error": "Diş hekimi ID'si gereklidir"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        try:
+            dentist_id = request.query_params.get('dentist_id')
+            if not dentist_id:
+                return Response(
+                    {"error": "Diş hekimi ID'si gereklidir"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        appointments = Appointment.objects.filter(
-            dentist_id=dentist_id
-        ).select_related('patient', 'dentist')
-        
-        serializer = AdminCalendarAppointmentSerializer(appointments, many=True)
-        return Response(serializer.data)
+            # Verify dentist exists first
+            try:
+                dentist = CustomUser.objects.get(id=dentist_id, user_type='dentist')
+            except CustomUser.DoesNotExist:
+                return Response(
+                    {"error": "Belirtilen diş hekimi bulunamadı"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Get appointments with related data
+            appointments = Appointment.objects.filter(
+                dentist=dentist
+            ).select_related('patient', 'dentist')
+            
+            # Use the serializer
+            serializer = AdminCalendarAppointmentSerializer(appointments, many=True)
+            
+            return Response({
+                'dentist_id': dentist.id,
+                'dentist_name': dentist.get_full_name(),
+                'appointments': serializer.data
+            })
+
+        except Exception as e:
+            print(f"Error in admin appointments_by_dentist: {str(e)}")
+            return Response(
+                {"error": "Internal server error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @action(detail=False, methods=['get'])
     def appointments_by_date(self, request):
