@@ -730,13 +730,38 @@ class AdminCalendarViewSet(ViewSet):
                 dentist=dentist
             ).select_related('patient', 'dentist')
             
-            # Use the serializer
-            serializer = AdminCalendarAppointmentSerializer(appointments, many=True)
+            calendar_data = []
+            for appointment in appointments:
+                start_datetime = datetime.combine(
+                    appointment.appointment_date, 
+                    appointment.appointment_time
+                )
+                end_datetime = start_datetime + timedelta(minutes=appointment.duration)
+
+                calendar_data.append({
+                    'id': appointment.id,
+                    'title': f"{appointment.patient.get_full_name()} - {appointment.treatment}",
+                    'start': start_datetime.isoformat(),
+                    'end': end_datetime.isoformat(),
+                    'treatment': appointment.treatment,
+                    'status': appointment.status,
+                    'patient_id': appointment.patient.id,
+                    'patient_name': appointment.patient.get_full_name(),
+                    'dentist_name': dentist.get_full_name(),
+                    'notes': appointment.notes,
+                    'colour': {
+                        'scheduled': '#ffd700',
+                        'confirmed': '#32cd32',
+                        'completed': '#4169e1',
+                        'cancelled': '#dc143c',
+                        'no_show': '#808080'
+                    }.get(appointment.status, '#000000')
+                })
             
             return Response({
                 'dentist_id': dentist.id,
                 'dentist_name': dentist.get_full_name(),
-                'appointments': serializer.data
+                'appointments': calendar_data
             })
 
         except Exception as e:
