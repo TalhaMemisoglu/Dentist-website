@@ -49,6 +49,8 @@ assistant_appointment_detail = AssistantAppointmentViewSet.as_view({
     'delete': 'destroy'
 })
 
+assistant_patient_list = AssistantAppointmentViewSet.as_view({'get': 'patient_list'})
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),  # Include all URLs from the `api` app
@@ -96,4 +98,6 @@ urlpatterns = [
     path('api/assistant/appointments/<int:pk>/update/',AssistantAppointmentViewSet.as_view({'patch': 'update_appointment'}),name='assistant-appointment-update'),
     path('api/assistant/appointments/<int:pk>/confirm/',AssistantAppointmentViewSet.as_view({'post': 'confirm_appointment'}),name='assistant-appointment-confirm'),
     path('api/assistant/appointments/<int:pk>/cancel/',AssistantAppointmentViewSet.as_view({'post': 'cancel_appointment'}),name='assistant-appointment-cancel'),
+
+    path('api/assistant/appointments/patient-list/', assistant_patient_list, name='assistant-patient-list'),
 ]

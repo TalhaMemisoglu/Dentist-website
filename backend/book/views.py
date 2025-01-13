@@ -825,6 +825,8 @@ PUT    /api/booking/assistant/appointments/<pk>/     # Full update of appointmen
 PATCH  /api/booking/assistant/appointments/<pk>/     # Partial update of appointment
 DELETE /api/booking/assistant/appointments/<pk>/     # Delete appointment
 
+GET /api/booking/assistant/appointments/patient_list/ # Get list of patients
+
 '''
 
 
@@ -837,6 +839,33 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
             return Appointment.objects.none()
         return Appointment.objects.all().select_related('patient', 'dentist')
 
+    @action(detail=False, methods=['get'])
+    def patient_list(self, request):
+        """Get list of all patients for appointment creation"""
+        if request.user.user_type != 'assistant':
+            return Response(
+                {"error": "Yalnızca asistanlar hasta listesine erişebilir"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        patients = CustomUser.objects.filter(
+            user_type='patient',
+            is_active=True
+        ).order_by('first_name', 'last_name')
+
+        patient_data = [{
+            'id': patient.id,
+            'name': patient.get_full_name(),
+            'email': patient.email,
+            'phone': patient.phone
+        } for patient in patients]
+
+        return Response({
+            'count': len(patient_data),
+            'patients': patient_data
+        })
+    
+    
     def create(self, request, *args, **kwargs):
         """Create appointment for a patient as an assistant"""
         # Verify user is an assistant
