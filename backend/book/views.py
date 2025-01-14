@@ -181,16 +181,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         print(f"\n=== Perform Create ===")
-        print(f"Serializer data before save: {serializer.validated_data}")
         serializer.save()
 
     def create(self, request, *args, **kwargs):
-        print("\n=== ViewSet create method detailed logs ===")
-        print(f"Request user: {request.user}")
-        print(f"User authenticated: {request.user.is_authenticated}")
-        print(f"User type: {request.user.user_type}")
-        print(f"Raw request data: {request.data}")
-        print(f"User_id: {request.user.id}")
 
         mutable_data = request.data.copy()
         mutable_data['patient'] = request.user.id
