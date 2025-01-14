@@ -868,6 +868,9 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Create appointment for a patient as an assistant"""
+        print("\n=== Starting appointment creation ===")
+        print(f"Request data: {request.data}")
+
         # Verify user is an assistant
         if request.user.user_type != 'assistant':
             return Response(
@@ -879,6 +882,7 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
         required_fields = ['patient', 'dentist', 'appointment_date', 'start_time', 'treatment']
         missing_fields = [field for field in required_fields if field not in request.data]
         if missing_fields:
+            print(f"Missing fields: {missing_fields}")
             return Response(
                 {"error": f"Eksik alanlar: {', '.join(missing_fields)}"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -886,16 +890,38 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
 
         try:
             # Validate patient
-            patient = CustomUser.objects.get(id=request.data['patient'])
+            print(f"Validating patient ID: {request.data['patient']}")
+            try:
+                patient = CustomUser.objects.get(id=request.data['patient'])
+                print(f"Found patient: {patient.get_full_name()} (type: {patient.user_type})")
+            except CustomUser.DoesNotExist:
+                print(f"Patient with ID {request.data['patient']} not found")
+                return Response(
+                    {"error": f"Hasta ID {request.data['patient']} bulunamadı"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
             if patient.user_type != 'patient':
+                print(f"Invalid patient type: {patient.user_type}")
                 return Response(
                     {"error": "Geçersiz hasta ID'si"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
             # Validate dentist
-            dentist = CustomUser.objects.get(id=request.data['dentist'])
+            print(f"Validating dentist ID: {request.data['dentist']}")
+            try:
+                dentist = CustomUser.objects.get(id=request.data['dentist'])
+                print(f"Found dentist: {dentist.get_full_name()} (type: {dentist.user_type})")
+            except CustomUser.DoesNotExist:
+                print(f"Dentist with ID {request.data['dentist']} not found")
+                return Response(
+                    {"error": f"Diş hekimi ID {request.data['dentist']} bulunamadı"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
             if dentist.user_type != 'dentist':
+                print(f"Invalid dentist type: {dentist.user_type}")
                 return Response(
                     {"error": "Geçersiz diş hekimi ID'si"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -911,6 +937,11 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
                 end_datetime = start_datetime + timedelta(minutes=60)
                 end_time = end_datetime.time()
                 
+                print(f"Appointment details:")
+                print(f"Date: {appointment_date}")
+                print(f"Start time: {start_time}")
+                print(f"End time: {end_time}")
+                
                 # Check if date is in the past
                 if appointment_date < local_now.date():
                     return Response(
@@ -925,7 +956,8 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            except ValueError:
+            except ValueError as e:
+                print(f"Date/time validation error: {str(e)}")
                 return Response(
                     {"error": "Geçersiz tarih veya saat formatı"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -948,28 +980,34 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
             ).exists()
 
             if overlapping_appointment:
+                print("Found overlapping appointment")
                 return Response(
                     {"error": "Bu zaman aralığında başka bir randevu mevcut"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Create appointment data using the existing serializer fields
+            # Create appointment data
             appointment_data = {
                 'patient': patient.id,
                 'dentist': dentist.id,
                 'appointment_date': request.data['appointment_date'],
                 'appointment_time': request.data['start_time'],
-                'duration': 60,  # Fixed 60-minute duration
+                'duration': 60,
                 'treatment': request.data['treatment'],
                 'notes': request.data.get('notes', ''),
                 'status': 'scheduled'
             }
 
+            print(f"Creating appointment with data: {appointment_data}")
+
             serializer = self.get_serializer(data=appointment_data)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                print(f"Serializer validation errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
             self.perform_create(serializer)
 
-            # Get created appointment with full details
+            # Get created appointment
             created_appointment = serializer.instance
             
             # Calculate end time for response
@@ -1001,9 +1039,27 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
                 }
             }
 
+            print("Successfully created appointment")
             return Response(response_data, status=status.HTTP_201_CREATED)
 
+        except CustomUser.DoesNotExist as e:
+            print(f"User not found error: {str(e)}")
+            return Response(
+                {"error": "Hasta veya diş hekimi bulunamadı"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"error": "Hasta veya diş hekimi bulunamadı"},
+                status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             return Response(
                 {"error": str(e)},
