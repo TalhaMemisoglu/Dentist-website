@@ -1003,11 +1003,7 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
 
             return Response(response_data, status=status.HTTP_201_CREATED)
 
-        except CustomUser.DoesNotExist:
-            return Response(
-                {"error": "Hasta veya diş hekimi bulunamadı"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        
         except Exception as e:
             return Response(
                 {"error": str(e)},
