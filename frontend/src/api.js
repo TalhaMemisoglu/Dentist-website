@@ -3,9 +3,9 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
 
 // sample JavaScript code snippet
 // Local
-const apiUrl = "http://127.0.0.1:8000/";
+//const apiUrl = "http://127.0.0.1:8000/";
 // Cloud
-// const apiUrl = "https://dentist-website-production.up.railway.app";
+const apiUrl = "https://dentist-website-production.up.railway.app";
 
 
 
