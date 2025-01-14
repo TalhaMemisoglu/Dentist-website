@@ -30,34 +30,9 @@ const Sidebar = () => {
         });
         if (response.status === 200) {
           setUser(response.data);
-        } else {
-          console.error(`Unexpected status code: ${response.status}`);
         }
       } catch (error) {
-        if (error.response) {
-          // Server responded with a status other than 2xx
-          console.error("Error response from server:", error.response);
-      
-          if (error.response.status === 401) {
-            // Unauthorized: Token might be invalid or expired
-            localStorage.removeItem(ACCESS_TOKEN); // Clear invalid token
-            navigate("/login"); // Redirect to login
-          } else if (error.response.status === 403) {
-            // Forbidden: User doesn't have access
-            console.error("Access forbidden. User might lack permissions.");
-          } else if (error.response.status === 500) {
-            // Internal Server Error
-            console.error("Server error. Please try again later.");
-          } else {
-            console.error(`Unhandled status code: ${error.response.status}`);
-          }
-        } else if (error.request) {
-          // No response received from server
-          console.error("No response received from server:", error.request);
-        } else {
-          // Something happened while setting up the request
-          console.error("Error setting up the request:", error.message);
-        }
+        console.error("Error fetching user data:", error.response || error.message);
       }
     };
 
@@ -117,6 +92,11 @@ const Sidebar = () => {
               <li>
                 <Link to="/schedule-page" className={location.pathname === "/schedule-page" ? "active" : ""}>
                   <span className="icon">📅</span> Takvimi Gör
+                </Link>
+              </li>
+              <li>
+                <Link to="/add-appointment" className={location.pathname === "/add-appointment" ? "active" : ""}>
+                  <span className="icon">📅</span> Randevu Ekle
                 </Link>
               </li>
             </>
