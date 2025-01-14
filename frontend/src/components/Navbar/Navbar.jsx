@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './Navbar.scss';
 import logo from './../../assets/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import { ACCESS_TOKEN } from '../../constants';
 
 const Navbar = () => {
@@ -26,7 +26,7 @@ const Navbar = () => {
                 const token = localStorage.getItem(ACCESS_TOKEN);
                 if (!token) return;
                 
-                const response = await axios.get("/api/user/", {
+                const response = await api.get("/api/user/", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 

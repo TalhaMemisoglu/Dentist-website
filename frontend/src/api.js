@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants.js";
 
 // sample JavaScript code snippet
 // Local
@@ -7,10 +7,10 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants";
 // Cloud
 const apiUrl = "https://dentist-website-production.up.railway.app";
 
-
+console.log("API Base URL:", apiUrl);
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : apiUrl,
+  baseURL: apiUrl,
 });
 
 

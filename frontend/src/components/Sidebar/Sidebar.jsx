@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom"; // Added useLocation
-import axios from "axios";
+import api from '../../api';
 import "./Sidebar.scss";
 import profilePhoto from "../../assets/about/team/1.png";
 import { ACCESS_TOKEN } from "../../constants";
@@ -25,7 +25,7 @@ const Sidebar = () => {
           navigate("/login");
           return;
         }
-        const response = await axios.get("/api/user/", {
+        const response = await api.get("/api/user/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.status === 200) {
