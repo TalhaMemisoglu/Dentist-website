@@ -36,6 +36,7 @@ function logoutAndRegister() {
 
 function App() {
   return (
+    <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/appointments-page" element={<AppointmentsPage />} />
@@ -57,6 +58,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
           <Route path="/add-appointment" element={<AddAppointment />} />
         </Routes>
+      </BrowserRouter>
   );
 }
 
