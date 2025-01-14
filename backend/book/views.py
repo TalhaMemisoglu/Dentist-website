@@ -876,7 +876,7 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
             )
 
         # Validate required fields
-        required_fields = ['patient', 'dentist', 'appointment_date', 'appointment_time', 'treatment']
+        required_fields = ['patient', 'dentist', 'appointment_date', 'start_time', 'treatment']
         missing_fields = [field for field in required_fields if field not in request.data]
         if missing_fields:
             return Response(
@@ -904,7 +904,12 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
             # Validate date and time
             try:
                 appointment_date = datetime.strptime(request.data['appointment_date'], '%Y-%m-%d').date()
-                appointment_time = datetime.strptime(request.data['appointment_time'], '%H:%M').time()
+                start_time = datetime.strptime(request.data['start_time'], '%H:%M').time()
+                
+                # Calculate end time for validation (fixed 60-minute duration)
+                start_datetime = datetime.combine(datetime.today(), start_time)
+                end_datetime = start_datetime + timedelta(minutes=60)
+                end_time = end_datetime.time()
                 
                 # Check if date is in the past
                 if appointment_date < local_now.date():
@@ -913,38 +918,48 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
-                # If appointment is for today, check if time is in the past
-                if appointment_date == local_now.date() and appointment_time < local_now.time():
+                # If appointment is for today, check if start time is in the past
+                if appointment_date == local_now.date() and start_time < local_now.time():
                     return Response(
                         {"error": "Geçmiş saate randevu oluşturulamaz"},
                         status=status.HTTP_400_BAD_REQUEST
                     )
+
             except ValueError:
                 return Response(
                     {"error": "Geçersiz tarih veya saat formatı"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Check for existing appointments at the same time
-            existing_appointment = Appointment.objects.filter(
+            # Check for overlapping appointments
+            overlapping_appointment = Appointment.objects.filter(
                 dentist=dentist,
-                appointment_date=appointment_date,
-                appointment_time=appointment_time,
+                appointment_date=appointment_date
+            ).annotate(
+                end_time=ExpressionWrapper(
+                    Cast('appointment_time', output_field=DateTimeField()) + 
+                    Value(timedelta(minutes=60)),
+                    output_field=TimeField()
+                )
+            ).filter(
+                Q(appointment_time__lt=end_time) & 
+                Q(end_time__gt=start_time),
                 status__in=['scheduled', 'confirmed']
             ).exists()
 
-            if existing_appointment:
+            if overlapping_appointment:
                 return Response(
-                    {"error": "Bu zaman diliminde başka bir randevu mevcut"},
+                    {"error": "Bu zaman aralığında başka bir randevu mevcut"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Create appointment data
+            # Create appointment data using the existing serializer fields
             appointment_data = {
                 'patient': patient.id,
                 'dentist': dentist.id,
                 'appointment_date': request.data['appointment_date'],
-                'appointment_time': request.data['appointment_time'],
+                'appointment_time': request.data['start_time'],
+                'duration': 60,  # Fixed 60-minute duration
                 'treatment': request.data['treatment'],
                 'notes': request.data.get('notes', ''),
                 'status': 'scheduled'
@@ -956,6 +971,14 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
 
             # Get created appointment with full details
             created_appointment = serializer.instance
+            
+            # Calculate end time for response
+            appointment_start = datetime.combine(
+                datetime.today(),
+                created_appointment.appointment_time
+            )
+            appointment_end = appointment_start + timedelta(minutes=60)
+            
             response_data = {
                 'message': 'Randevu başarıyla oluşturuldu',
                 'appointment': {
@@ -969,7 +992,9 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
                         'name': dentist.get_full_name()
                     },
                     'appointment_date': created_appointment.appointment_date,
-                    'appointment_time': created_appointment.appointment_time,
+                    'start_time': created_appointment.appointment_time.strftime('%H:%M'),
+                    'end_time': appointment_end.strftime('%H:%M'),
+                    'duration': 60,
                     'treatment': created_appointment.treatment,
                     'status': created_appointment.status,
                     'notes': created_appointment.notes
