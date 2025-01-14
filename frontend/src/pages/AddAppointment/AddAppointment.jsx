@@ -155,10 +155,10 @@ const AddAppointment = () => {
         // }
         
         const appointmentData = {
-            patient_id: 11,
-            dentist_id: 32,
+            patient: 11,
+            dentist: 32,
             appointment_date: "2025-01-14",
-            start_time: "09:00",
+            appointment_time: "09:00",
             treatment: "IMPLANT",
         };
 
