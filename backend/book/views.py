@@ -1055,16 +1055,6 @@ class AssistantAppointmentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        except CustomUser.DoesNotExist:
-            return Response(
-                {"error": "Hasta veya diş hekimi bulunamadı"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
     @action(detail=True, methods=['patch'])
     def update_appointment(self, request, pk=None):
