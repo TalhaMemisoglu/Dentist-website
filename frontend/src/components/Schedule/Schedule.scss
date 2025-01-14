@@ -1,16 +1,64 @@
-.dentist-filter {
-    margin-bottom: 20px;
-    
-    .dentist-select {
-        padding: 8px 12px;
+.schedule-container {
+    display: flex;
+    height: 100vh;
+    position: relative;
+
+    .calendar-section {
+        flex: 1;
+    }
+
+    .add-appointment-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        border: none;
         border-radius: 4px;
-        border: 1px solid #ddd;
-        font-size: 14px;
-        min-width: 200px;
-        
-        &:focus {
-            outline: none;
-            border-color: #007bff;
+        cursor: pointer;
+        z-index: 1001;
+
+        &:hover {
+            background: #218838;
+        }
+    }
+
+    .side-panel {
+        position: fixed;
+        top: 0;
+        right: -400px; // Start off-screen
+        width: 400px;
+        height: 100%;
+        background: white;
+        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: right 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+
+        &.open {
+            right: 0; // Slide in when open
+        }
+
+        .close-panel-button {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+
+            &:hover {
+                background: #e2e6ea;
+            }
+        }
+
+        .appointment-form {
+            margin-top: 60px;
+            // Add form styling here
         }
     }
 }

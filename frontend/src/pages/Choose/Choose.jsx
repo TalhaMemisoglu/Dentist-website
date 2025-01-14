@@ -14,37 +14,21 @@ const Choose = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDentist, setSelectedDentist] = useState(null);
 
-  // static dentists for testing purposes
-  // id is necessary
-  /*const [dentists, setDentists] = useState([
-    { id: 1, name: "John", surname: "Doe", specialty: "Orthodontist" },
-    { id: 2, name: "Jane", surname: "Smith", specialty: "Pediatric Dentist" },
-    { id: 3, name: "Emily", surname: "Brown", specialty: "Endodontist" },
-    { id: 4, name: "Michael", surname: "Johnson", specialty: "Periodontist" },
-    { id: 5, name: "Sarah", surname: "Williams", specialty: "Oral Surgeon" },
-    { id: 6, name: "David", surname: "Jones", specialty: "Prosthodontist" },
-    { id: 7, name: "Laura", surname: "Garcia", specialty: "General Dentist" },
-    { id: 8, name: "Chris", surname: "Martinez", specialty: "Cosmetic Dentist" },
-    { id: 9, name: "Anna", surname: "Taylor", specialty: "Orthodontist" },
-    { id: 10, name: "Daniel", surname: "Lee", specialty: "Pediatric Dentist" },
-  ]);*/
-
-
   useEffect(() => {
-     const fetchDentists = async () => {
-       api
-         .get("/api/dentists/")
-         .then((res) => res.data)
-         .then((data) => {
-             setDentists(data);
-             console.log(data);
-         })
-         .catch((err) => alert(err));
-     };
+    const fetchDentists = async () => {
+      api
+        .get("/api/dentists/")
+        .then((res) => res.data)
+        .then((data) => {
+          setDentists(data);
+          console.log(data);
+        })
+        .catch((err) => alert(err));
+    };
 
-     fetchDentists();
+    fetchDentists();
   }, []);
-  
+
   // Handle the selection of service and dentist
   const handleServiceClick = (service) => {
     setSelectedService(service);

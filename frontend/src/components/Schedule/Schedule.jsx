@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import BigCalendar from '../../components/Big-Calendar/Big-Calendar';
 import { ACCESS_TOKEN } from "../../constants";
 import api from "../../api";
@@ -135,8 +134,7 @@ const Schedule = () => {
     const showFilter = userType === 'manager' || userType === 'assistant';
 
     return (
-        <div>
-            <h1>Takvim</h1>
+        <div className="schedule-container">
             {showFilter && dentists.length > 0 && (
                 <div className="dentist-filter">
                     <select
@@ -152,6 +150,7 @@ const Schedule = () => {
                     </select>
                 </div>
             )}
+            
             <BigCalendar 
                 events={events} 
                 userType={userType}

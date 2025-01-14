@@ -22,6 +22,7 @@ import AddRemove from './pages/AddRemove/AddRemove'
 import Sidebar from "./components/Sidebar/Sidebar";
 import SchedulePage from './pages/SchedulePage/SchedulePage';
 import Schedule from './components/Schedule/Schedule'; // for testing purposes. it should be removed in production.
+import AddAppointment from './pages/AddAppointment/AddAppointment'
 
 function Logout() {
   localStorage.clear();
@@ -55,6 +56,7 @@ function App() {
           <Route path="/addremove" element={<AddRemove />} />
           <Route path="/password-reset/:uid/:token" element={<ResetPassword />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/add-appointment" element={<AddAppointment />} />
         </Routes>
       </BrowserRouter>
   );

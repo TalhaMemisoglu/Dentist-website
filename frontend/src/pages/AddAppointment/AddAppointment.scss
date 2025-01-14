@@ -1,0 +1,127 @@
+.add-appointment-page-container {
+    display: flex;
+}
+
+.sidebar-wrapper {
+    width: 250px; // Adjust as needed
+}
+
+.add-appointment-wrapper {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.calendar-hours-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.calendar-section,
+.hours-section {
+    flex: 1;
+    margin: 10px;
+}
+
+.available-hours {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.selected-time {
+    margin: 5px;
+}
+
+button.selected-time {
+    background-color: #007bff;
+    color: white;
+}
+
+button.selected-time:hover {
+    background-color: #0056b3;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#patient-search {
+    width: 100%;
+    padding-right: 30px; // Reserve space for the clear button
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.clear-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 12px; // Reduce size
+    color: #888;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1; // Keep it compact
+    height: 20px;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.clear-button:hover {
+    color: #333;
+    background-color: #f0f0f0; // Subtle hover effect
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    z-index: 1000;
+}
+
+.search-results li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.search-results li:hover {
+    background-color: #f0f0f0;
+}
