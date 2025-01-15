@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../api";
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../sections/Footer/Footer';
 import { useParams } from "react-router-dom";
@@ -16,7 +16,7 @@ const ResetPassword = () => {
     setMessage(""); // Clear previous messages
 
     try {
-      await axios.post(`/api/password-reset/${uid}/${token}/`, {
+      await api.post(`/api/password-reset/${uid}/${token}/`, {
         new_password: newPassword,
       });
       setMessage("Şifre başarıyla sıfırlandı.");

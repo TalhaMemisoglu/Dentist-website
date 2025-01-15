@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../sections/Footer/Footer';
+import api from "../../api";
 
 
 const RequestPasswordReset = () => {
@@ -15,7 +15,7 @@ const RequestPasswordReset = () => {
     setMessage(""); // Clear previous messages
 
     try {
-      await axios.post("/api/password-reset-request/", { email });
+      await api.post("/api/password-reset-request/", { email });
       setMessage("Şifre sıfırlama maili gönderildi. Gelen kutunu kontrol et.");
     } catch (error) {
       setMessage("Mail gönderilirken hata yaşandı.");

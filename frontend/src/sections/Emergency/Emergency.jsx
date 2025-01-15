@@ -3,7 +3,6 @@ import './Emergency.scss';
 import SectionTitle from '../../components/SectionTitle/SectionTitle';
 import EmergencyImg from '../../assets/emergency.png';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 
 const Emergency = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);

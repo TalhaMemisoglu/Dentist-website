@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment-timezone';
 import './Big-Calendar.scss'
-import axios from 'axios';
+import api from '../../api';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 
 const localizer = momentLocalizer(moment);
@@ -26,7 +26,7 @@ const BigCalendar = ({ events, userType, selectedDentistId }) => {
 
 
             try {
-                const response = await axios.get('/api/dentists/', {
+                const response = await api.get('/api/dentists/', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 const dentistsList = response.data; // Backend now returns only dentists
@@ -73,7 +73,7 @@ const BigCalendar = ({ events, userType, selectedDentistId }) => {
                 console.log("User type:", userType);
                 console.log("Selected dentist ID:", selectedDentistId);
     
-                const response = await axios.get(apiUrl, {
+                const response = await api.get(apiUrl, {
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
