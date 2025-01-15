@@ -6,10 +6,10 @@ import profilePhoto from "../../assets/about/team/1.png";
 import { ACCESS_TOKEN } from "../../constants";
 
 const USER_TYPE_LABELS = {
-  dentist: "Dentist",
-  patient: "Patient",
-  assistant: "Assistant",
-  manager: "Manager",
+  dentist: "Dişçi",
+  patient: "Hasta",
+  assistant: "Assistan",
+  manager: "Yönetici",
 };
 
 const Sidebar = () => {

@@ -103,15 +103,15 @@ const Profile = () => {
     // Validate current password
     if (currentPassword === '') {
       if (newPassword || repeatPassword) {
-        setCurrentPasswordWarning('You must enter your current password');
+        setCurrentPasswordWarning('Mevcut Şifrenizi Girmeniz Gerekiyor');
       }
     }
 
     // Validate new password and repeat password
     if (newPassword && !repeatPassword) {
-      setRepeatPasswordWarning('You must repeat your new password');
+      setRepeatPasswordWarning('Şifrenizi tekrar girmeniz gerekiyor');
     } else if (newPassword && repeatPassword && newPassword !== repeatPassword) {
-      setRepeatPasswordWarning('New password and repeated password do not match');
+      setRepeatPasswordWarning('Yeni ve tekrar eden şifre aynı olmalı!');
     } else {
       setRepeatPasswordWarning('');
     }
@@ -217,7 +217,7 @@ const Profile = () => {
                       pointerEvents: isEdited ? "auto" : "none",
                     }}
                   >
-                    Save
+                    Kaydet
                   </button>
                   <button
                     className="btn btn-secondary"
@@ -228,7 +228,7 @@ const Profile = () => {
                       pointerEvents: isEdited ? "auto" : "none",
                     }}
                   >
-                    Cancel
+                    İptal
                   </button>
                 </div>
               </div>
@@ -238,10 +238,10 @@ const Profile = () => {
       case 'password':
         return (
           <div>
-            <h4>Change Password</h4>
+            <h4>Şifreni Değiştir</h4>
             <div className="card-body">
               <div className="form-group">
-                <label className="form-label">Current Password</label>
+                <label className="form-label">Mevcut Şifre</label>
                 <input 
                   type="password"
                   name="currentPassword"
@@ -254,7 +254,7 @@ const Profile = () => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">New Password</label>
+                <label className="form-label">Yeni Şifre</label>
                 <input
                   type="password"
                   name="newPassword"
@@ -267,7 +267,7 @@ const Profile = () => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">Repeat New Password</label>
+                <label className="form-label">Yeni Şifre Tekrarı</label>
                 <input
                   type="password"
                   name="repeatPassword"
@@ -289,7 +289,7 @@ const Profile = () => {
                     pointerEvents: isPasswordValid ? "auto" : "none",
                   }}
                 >
-                  Save
+                  Kaydet
                 </button>
               </div>
             </div>
@@ -302,7 +302,7 @@ const Profile = () => {
 
   return (
     <div className="container mt-5">
-      <h4 className="font-weight-bold text-center">Profile Settings</h4>
+      <h4 className="font-weight-bold text-center">Profil Ayarları</h4>
       <div className="row mt-4">
         {/* Column layout */}
         <div className="col-md-6">
@@ -311,7 +311,7 @@ const Profile = () => {
             onClick={() => setActivePage('account')}
             style={{ cursor: 'pointer' }}
           >
-            <h5>Account</h5>
+            <h5>Hesap</h5>
           </div>
         </div>
         <div className="col-md-6">
@@ -320,7 +320,7 @@ const Profile = () => {
             onClick={() => setActivePage('password')}
             style={{ cursor: 'pointer' }}
           >
-            <h5>Password</h5>
+            <h5>Şifre</h5>
           </div>
         </div>
       </div>
