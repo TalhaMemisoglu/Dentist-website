@@ -26,6 +26,7 @@ const AddAppointment = () => {
         try {
             const res = await api.get("/api/assistant/appointments/patient-list/");
             console.log("patients: ", res.data.patients);
+
             setPatients(res.data.patients);
             setFilteredPatients(res.data.patients);
         } catch (err) {
