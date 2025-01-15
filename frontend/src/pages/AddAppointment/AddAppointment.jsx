@@ -66,8 +66,8 @@ const AddAppointment = () => {
         const dentist = dentists.find((dentist) => dentist.id === selectedDentistId);
         setSelectedDentist(dentist);
         setSelectedDate(null); // Reset the selected date when dentist changes
-        setAvailableDates([]); // Clear the available dates
-        setAvailableHours([]); // Clear the available hours
+        // setAvailableDates([]); // Clear the available dates
+        // setAvailableHours([]); // Clear the available hours
     };
 
     // Handle time selection
@@ -155,10 +155,10 @@ const AddAppointment = () => {
         // }
         
         const appointmentData = {
-            patient: 11,
-            dentist: 32,
+            patient_id: 11,
+            dentist_id: 32,
             appointment_date: "2025-01-14",
-            appointment_time: "09:00",
+            start_time: "09:00",
             treatment: "IMPLANT",
         };
 
@@ -185,48 +185,49 @@ const AddAppointment = () => {
                 <h2>Add New Appointment</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                    <div className="search-container">
                         <label htmlFor="patient-search">Search Patient</label>
-                        <div className="search-input-wrapper">
-                            <input
-                                type="text"
-                                id="patient-search"
-                                value={searchQuery}
-                                onChange={handlePatientSearch}
-                                placeholder="Search by name or email"
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    className="clear-button"
-                                    onClick={() => {
-                                        setSearchQuery(""); // Clear the search query
-                                        setFilteredPatients(patients); // Reset the filtered list
-                                    }}
-                                >
-                                    ✖
-                                </button>
-                            )}
-                        </div>
-                        {searchQuery && filteredPatients.length > 0 && (
-                            <ul className="search-results">
-                                {filteredPatients.map((patient) => (
-                                    <li
-                                        key={patient.id}
+                        <div className="search-container">
+                            <div className="search-input-wrapper">
+                                <input
+                                    type="text"
+                                    id="patient-search"
+                                    value={searchQuery}
+                                    onChange={handlePatientSearch}
+                                    placeholder="Search by name or email"
+                                    className="responsive-field"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        className="clear-button"
                                         onClick={() => {
-                                            setSelectedPatient(patient);
-                                            setSearchQuery(
-                                                `${patient.first_name || ""} ${patient.last_name || ""}`.trim() || patient.email
-                                            );
-                                            setFilteredPatients([]); // close the dropdown
+                                            setSearchQuery(""); // Clear the search query
+                                            setFilteredPatients(patients); // Reset the filtered list
                                         }}
                                     >
-                                        {patient.first_name} {patient.last_name} - {patient.email}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
+                                        ✖
+                                    </button>
+                                )}
+                            </div>
+                            {searchQuery && filteredPatients.length > 0 && (
+                                <ul className="search-results">
+                                    {filteredPatients.map((patient) => (
+                                        <li
+                                            key={patient.id}
+                                            onClick={() => {
+                                                setSelectedPatient(patient);
+                                                setSearchQuery(
+                                                    `${patient.first_name || ""} ${patient.last_name || ""}`.trim() || patient.email
+                                                );
+                                                setFilteredPatients([]); // close the dropdown
+                                            }}
+                                        >
+                                            {patient.first_name} {patient.last_name} - {patient.email}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                     </div>
                     <div className="form-group">
                         <label htmlFor="service">Treatment</label>
@@ -284,7 +285,7 @@ const AddAppointment = () => {
                             )}
                         </div>
                     </div>
-                    <button type="submit">Add Appointment</button>
+                    <button className="submit-button" type="submit">Add Appointment</button>
                 </form>
             </div>
         </div>

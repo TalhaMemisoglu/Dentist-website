@@ -18,7 +18,6 @@ const Schedule = () => {
   // Get dentistId from chosenDentist
   const dentistId = chosenDentist?.id;
 
-
   // const [userId, setUserId] = useState(null);
 
   const [selectedDate, setSelectedDate] = useState(null);
@@ -196,8 +195,6 @@ const Schedule = () => {
                     <p>Seçilen tarihte uygun saat bulunamadı.</p>
                   </div>
                 )}
-
-                {/* Create Appointment Button */}
                 <div className="create-appointment row">
                   <button
                     className="btn-continue"
