@@ -78,7 +78,7 @@ const Schedule = () => {
         console.log("User Type:", userType);
         console.log("Selected Dentist ID:", selectedDentistId);
 
-        if (!userType & !selectedDentistId) return;
+        if (!userType || !selectedDentistId) return;
 
         const fetchEvents = async () => {
             try {
