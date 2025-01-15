@@ -127,7 +127,7 @@ const AddAppointment = () => {
 
     useEffect(() => {
         const fetchAvailableHours = async () => {
-            if (!selectedDentist || !selectedDate) return;
+            if (!selectedDentist && !selectedDate) return;
 
             try {
                 const response = await api.get(
@@ -171,6 +171,7 @@ const AddAppointment = () => {
                 // Optionally navigate to another page or reset the form
             }
         } catch (err) {
+            console.log(response.status);
             console.error('Booking error:', err.response?.data || err.message || err);
             alert(err.response?.data?.detail || 'Failed to create appointment');
         }

@@ -158,7 +158,7 @@ AUTH_USER_MODEL = 'api.CustomUser'  # For custom user model which we will need f
 LOGIN_REDIRECT_URL = 'profile'  # If the user successfully logs in, it will redirect to the profile page
 LOGIN_URL = 'login'  # If the user tries to access a view which requires authentication, it will redirect to the login page
 
-FRONTEND_URL = 'http://localhost:5173'  # Replace with your frontend's URL
+FRONTEND_URL = 'https://readme-dentist.ne.choreoapps.dev'  # Replace with your frontend's URL
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
@@ -189,4 +189,4 @@ SITE_ID = 1
 CORS_ALLOW_CREDENTIALS = True
 
 # If using cookies or sessions
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
+CSRF_TRUSTED_ORIGINS = ['https://readme-dentist.ne.choreoapps.dev']
