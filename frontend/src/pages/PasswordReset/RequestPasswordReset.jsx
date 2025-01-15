@@ -3,7 +3,6 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../sections/Footer/Footer';
 import api from "../../api";
 
-
 const RequestPasswordReset = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -12,13 +11,12 @@ const RequestPasswordReset = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(""); // Clear previous messages
 
     try {
       await api.post("/api/password-reset-request/", { email });
-      setMessage("Şifre sıfırlama maili gönderildi. Gelen kutunu kontrol et.");
+      alert("Şifre sıfırlama maili gönderildi.");
     } catch (error) {
-      setMessage("Mail gönderilirken hata yaşandı.");
+      alert("Mail gönderilirken hata yaşandı. Lütfen tekrar deneyin.");
     } finally {
       setLoading(false);
     }
