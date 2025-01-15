@@ -160,6 +160,8 @@
   flex-direction: column;
   margin-top: 20px;
   margin-bottom: 20px;
+  position: relative;
+  min-height: 100px;
 
   ul {
     display: grid;
@@ -205,16 +207,15 @@
   // background-color: red;
 }
 
-.create-appointment {
-  // background-color: purple;
-  flex: 1;
-  align-self: flex-end;
-}
-
 .no-hour {
+  flex: 1;
   display: flex;
-  flex: 10;
   justify-content: center;
   align-items: center;
+  margin-bottom: 60px; // Add space for the button
+}
+
+.create-appointment {
+  justify-content: right;
 }
 

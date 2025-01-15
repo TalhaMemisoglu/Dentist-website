@@ -78,7 +78,7 @@ const Schedule = () => {
         console.log("User Type:", userType);
         console.log("Selected Dentist ID:", selectedDentistId);
 
-        if (!userType || !selectedDentistId) return;
+        if (!userType & !selectedDentistId) return;
 
         const fetchEvents = async () => {
             try {
@@ -128,7 +128,6 @@ const Schedule = () => {
         fetchEvents();
     }, [userType, selectedDentistId]);
 
-    if (isLoading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
 
     const showFilter = userType === 'manager' || userType === 'assistant';

@@ -18,19 +18,34 @@
   
       .react-calendar__navigation__arrow {
         background-color: white;
+        color: black;
+        font-size: 1.5rem;
+
+        &:hover {
+          background-color: #f0f0f0; // Add hover effect
+        }
       }
     }
-
+    
     .react-calendar__month-view__days__day--weekend {
         color: #d10000;
-        opacity: 0.3;
+        opacity: 0.2;
         pointer-events: none;
     }
   
     // Day tiles styling
     .react-calendar__tile {
-      &:active {
-
+      color: black;
+      font-weight: 500;;
+      
+      &:enabled {
+        cursor: pointer; // Show pointer cursor on enabled dates
+      
+        &:hover {
+          background-color: #f0f0f0 !important; // Light gray background on hover
+          border-radius: 10%;
+          color: #0690d4 !important;
+        }
       }
 
       &:focus {
@@ -52,11 +67,22 @@
 
     .react-calendar__tile--active {
       background: #0690d4 !important;
-      color: inherit;
+      color: white !important;
+      border-radius: 10%;
+
+      &:hover {
+        background: #057bb8 !important; // Slightly darker blue on hover
+        color: white !important; // Keep text white on hover
+      }
     }
 
     .react-calendar__tile--hasActive {
       background: #76baff;
+    
+      &:enabled:hover,
+      &:enabled:focus {
+        background: #a9d4ff !important;
+      }
     }
 
     .react-calendar__tile--hasActive:enabled:hover,
@@ -66,7 +92,7 @@
 
     .react-calendar__month-view__days__day[disabled] {
       background-color: white !important;
-      opacity: 0.5 !important;
+      opacity: 0.2 !important;
       pointer-events: none;
     }
 }
