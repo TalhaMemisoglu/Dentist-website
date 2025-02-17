@@ -18,4 +18,4 @@ You can find relevant documentation and track our progress on [Wiki](https://git
 
 This project has been completed. You can find the conclusion notes, feedback and grade of reports on [Conclusion](https://github.com/TalhaMemisoglu/Dentist-website/wiki/Conclusion)
 
-Important Note: This project was developed as part of a class assignment. As a result, it may not be suitable for real-world use due to certain functional and security issues. If you have any questions regarding the project, feel free to reach out to me via email at talhamemisoglu0@gmail.com.  
+**IMPORTANT NOTE**: This project was developed as part of a class assignment. As a result, it may not be suitable for real-world use due to certain functional and security issues. If you have any questions regarding the project, feel free to reach out to me via email at talhamemisoglu0@gmail.com.  
