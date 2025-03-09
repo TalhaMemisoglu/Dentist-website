@@ -2,7 +2,7 @@
 
 This project was developed for CSE343 class at Gebze Technical University. In this class, we are required to form a group of five people and create a software project for a customer we found. 
 
-We found a customer who runs a dentistry clinic, gathered their requirements and then outlined our roadmap. After preparing the technical documentation, we received approval from the customer and began working on the project. 
+We found a customer who runs a dentistry clinic, gathered their requirements and then outlined our roadmap. After preparing the technical documentation, we received approval from the customer and began working on the project.
 
 # Team Members
 
@@ -14,7 +14,9 @@ Ahmet Mucahit Gunduz | Front-End Developer
 Enes Korkmaz | Back-End Developer
 Hasan Yazgan | Back-End Developer
 
-You can find relevant documentation and track our progress on [Wiki](https://github.com/TalhaMemisoglu/Dentist-Web-Site/wiki) Pages.
+You can find relevant [reports](https://github.com/TalhaMemisoglu/Dentist-website/tree/main/Reports) to gain more information about our project's contents.
+
+You can find relevant documentation about our progress on [Wiki](https://github.com/TalhaMemisoglu/Dentist-Web-Site/wiki) Pages.
 
 Demonstration [video](https://www.youtube.com/watch?v=6Ulxg_3RjTo) of our project from Sprint 5.
 
