@@ -21,6 +21,21 @@ class CustomUser(AbstractUser):             #For custom user model which we will
     email = models.EmailField(max_length=254,unique=True)  #required email field
     verified = models.BooleanField(default=False)  # Added verified field
     
+    # Fix reverse accessor clashes
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='custom_user_set',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='custom_user_set',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
     
     def save(self, *args, **kwargs):
         # Only automatically set verified if it's a new object (i.e., on creation)
